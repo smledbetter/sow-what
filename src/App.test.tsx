@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { App } from "./App.tsx";
 import { Home } from "./pages/Home.tsx";
 import { Pin } from "./pages/Pin.tsx";
 import { Planted } from "./pages/Planted.tsx";
@@ -47,14 +48,15 @@ describe("route shells", () => {
     expect(screen.getByText("Planting #42")).toBeInTheDocument();
   });
 
-  it("renders Seeds at /seeds", () => {
+  it("renders Seeds at /seeds", async () => {
     renderRoute("/seeds");
-    expect(screen.getByText("Seed Inventory")).toBeInTheDocument();
+    expect(await screen.findByText("Seed Inventory")).toBeInTheDocument();
   });
 
-  it("renders SeedDetail at /seeds/:id", () => {
+  it("renders SeedDetail at /seeds/:id", async () => {
     renderRoute("/seeds/7");
-    expect(screen.getByText("Seed #7")).toBeInTheDocument();
+    // Non-existent seed shows not found
+    expect(await screen.findByText("Seed not found")).toBeInTheDocument();
   });
 
   it("renders Weather at /weather", () => {
@@ -65,5 +67,12 @@ describe("route shells", () => {
   it("renders Settings at /settings", () => {
     renderRoute("/settings");
     expect(screen.getByText("Settings")).toBeInTheDocument();
+  });
+});
+
+describe("App component", () => {
+  it("renders without crashing", () => {
+    render(<App />);
+    expect(screen.getByText("Sow What")).toBeInTheDocument();
   });
 });
