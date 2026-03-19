@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mission-control__add_project",
+      "mcp__mission-control__add_step",
+      "mcp__mission-control__update_project_status"
+    ]
+  }
+}
