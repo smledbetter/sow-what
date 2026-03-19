@@ -11,12 +11,15 @@
 ### Phase 1: Project Scaffold + Data Layer (Sprint 1)
 - [ ] Vite + React + TypeScript project init
 - [ ] Vitest + React Testing Library + coverage config
+- [ ] `fake-indexeddb` in Vitest setupFiles (required for Dexie in tests)
+- [ ] Playwright setup: config with `vite preview` webServer, mobile viewport (375x812)
 - [ ] vite-plugin-pwa setup (manifest, service worker)
 - [ ] React Router with route shells for all screens
 - [ ] Dexie.js database: schema for seeds, plantings, weatherSnapshots, settings
 - [ ] TypeScript interfaces for all data model types
-- [ ] Seed data access layer (CRUD functions) with tests
-- **Done when**: `tsc`, `eslint`, `vitest run --coverage` all pass; routes render empty shells; DB CRUD works in tests
+- [ ] Seed data access layer (CRUD functions) with unit tests
+- [ ] Smoke E2E test: app loads, routes navigate
+- **Done when**: all 5 gates pass (`tsc`, `eslint`, `vitest --coverage`, `playwright test`); routes render empty shells; DB CRUD works in tests
 
 ### Phase 2: Seed Inventory (Sprint 2)
 - [ ] Seed list view (`/seeds`) — display all seeds, search/filter
@@ -46,7 +49,8 @@
 - [ ] Sort by date planted, plant name, method
 - [ ] Filter by sow method (cold sow / direct sow)
 - [ ] Show weather conditions inline
-- **Done when**: planted list displays all records with correct data; sorting and filtering work; tests pass
+- [ ] E2E: full planting journey (add seed → checklist → check off → appears in planted list)
+- **Done when**: planted list displays all records with correct data; sorting and filtering work; E2E planting journey passes; tests pass
 
 ### Phase 6: Weather Integration (Sprint 6)
 - [ ] Open-Meteo client: fetch current conditions + 7-day forecast
@@ -71,4 +75,6 @@
 - [ ] Touch UX audit: tap target sizes (min 44px), one-handed reachability
 - [ ] Performance audit: Lighthouse PWA score
 - [ ] Edge cases: first-run experience (no seeds, no PIN set), season rollover
-- **Done when**: Lighthouse PWA score >= 90; all routes work offline; touch targets meet spec; edge cases handled; tests pass
+- [ ] E2E: offline test (disconnect network via Playwright context, verify app loads + data persists)
+- [ ] E2E: PIN flow (enter PIN → unlock → navigate → refresh → PIN required again)
+- **Done when**: Lighthouse PWA score >= 90; all routes work offline; E2E offline + PIN tests pass; touch targets meet spec; edge cases handled; all gates pass
