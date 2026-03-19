@@ -1,8 +1,251 @@
-export function Home() {
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import type { Seed, SowMethod } from "../types/index.ts";
+import { createSeedDAO } from "../db/seeds.ts";
+import { getSeedsForDate, todayISO } from "../utils/checklist.ts";
+import type { SowWhatDB } from "../db/database.ts";
+
+export interface HomeProps {
+  db?: SowWhatDB;
+  /** Override today's date for testing (ISO string YYYY-MM-DD) */
+  today?: string;
+}
+
+export function Home({ db, today }: HomeProps = {}) {
+  const navigate = useNavigate();
+  const [seeds, setSeeds] = useState<Seed[]>([]);
+  const [activeTab, setActiveTab] = useState<SowMethod>("cold_sow");
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+
+  const dao = useMemo(() => (db ? createSeedDAO(db) : createSeedDAO()), [db]);
+  const currentDate = today ?? todayISO();
+
+  useEffect(() => {
+    let cancelled = false;
+    dao.getAll().then((all) => {
+      if (!cancelled) setSeeds(all);
+    });
+    return () => { cancelled = true; };
+  }, [dao]);
+
+  const checklistSeeds = useMemo(
+    () => getSeedsForDate(seeds, activeTab, currentDate),
+    [seeds, activeTab, currentDate]
+  );
+
+  const toggleCheck = useCallback((seedId: number) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(seedId)) {
+        next.delete(seedId);
+      } else {
+        next.add(seedId);
+      }
+      return next;
+    });
+  }, []);
+
+  const tabStyle = (tab: SowMethod): React.CSSProperties => ({
+    flex: 1,
+    padding: "12px",
+    fontSize: "16px",
+    fontWeight: activeTab === tab ? "bold" : "normal",
+    backgroundColor: activeTab === tab ? "#2e7d32" : "#e0e0e0",
+    color: activeTab === tab ? "#fff" : "#333",
+    border: "none",
+    cursor: "pointer",
+    minHeight: "44px",
+    borderRadius: tab === "cold_sow" ? "8px 0 0 8px" : "0 8px 8px 0",
+  });
+
   return (
-    <div>
-      <h1>Sow What</h1>
-      <p>Today&apos;s planting checklist</p>
+    <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto" }}>
+      <h1 style={{ margin: "0 0 4px 0", fontSize: "24px" }}>Sow What</h1>
+      <p style={{ margin: "0 0 16px 0", color: "#666", fontSize: "14px" }}>
+        {currentDate}
+      </p>
+
+      <div
+        style={{ display: "flex", marginBottom: "16px" }}
+        role="tablist"
+        aria-label="Sow method"
+      >
+        <button
+          role="tab"
+          aria-selected={activeTab === "cold_sow"}
+          onClick={() => setActiveTab("cold_sow")}
+          style={tabStyle("cold_sow")}
+        >
+          Cold Sow
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === "direct_sow"}
+          onClick={() => setActiveTab("direct_sow")}
+          style={tabStyle("direct_sow")}
+        >
+          Direct Sow
+        </button>
+      </div>
+
+      {checklistSeeds.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "32px 0" }}>
+          <p style={{ color: "#999", fontSize: "16px" }}>
+            Nothing to sow today
+          </p>
+          <button
+            onClick={() => navigate("/seeds")}
+            style={{
+              marginTop: "12px",
+              padding: "12px 24px",
+              fontSize: "16px",
+              minHeight: "44px",
+              cursor: "pointer",
+              borderRadius: "8px",
+              border: "1px solid #ccc",
+            }}
+          >
+            View Seed Inventory
+          </button>
+        </div>
+      ) : (
+        <ul
+          style={{ listStyle: "none", padding: 0, margin: 0 }}
+          role="list"
+          aria-label="Checklist"
+        >
+          {checklistSeeds.map((seed) => {
+            const isChecked = checkedIds.has(seed.id!);
+            return (
+              <li
+                key={seed.id}
+                role="listitem"
+                style={{
+                  padding: "12px",
+                  borderBottom: "1px solid #eee",
+                  cursor: "pointer",
+                  minHeight: "44px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  opacity: isChecked ? 0.6 : 1,
+                }}
+                onClick={() => toggleCheck(seed.id!)}
+              >
+                <span
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    border: `2px solid ${isChecked ? "#2e7d32" : "#ccc"}`,
+                    backgroundColor: isChecked ? "#2e7d32" : "transparent",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    color: "#fff",
+                    fontSize: "14px",
+                  }}
+                  aria-hidden="true"
+                >
+                  {isChecked ? "\u2713" : ""}
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div
+                    style={{
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                      textDecoration: isChecked ? "line-through" : "none",
+                    }}
+                  >
+                    {seed.plant}
+                  </div>
+                  <div
+                    style={{
+                      color: "#666",
+                      fontSize: "14px",
+                      textDecoration: isChecked ? "line-through" : "none",
+                    }}
+                  >
+                    {seed.varietal}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    textAlign: "right",
+                    fontSize: "12px",
+                    color: "#999",
+                    flexShrink: 0,
+                  }}
+                >
+                  {seed.soilTempMin > 0 || seed.soilTempMax > 0
+                    ? `${seed.soilTempMin}-${seed.soilTempMax}\u00B0F`
+                    : ""}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <nav
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "space-around",
+          borderTop: "1px solid #eee",
+          backgroundColor: "#fff",
+          padding: "8px 0",
+        }}
+        aria-label="Main navigation"
+      >
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            minHeight: "44px",
+            minWidth: "44px",
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+            fontSize: "12px",
+            fontWeight: "bold",
+            color: "#2e7d32",
+          }}
+        >
+          Today
+        </button>
+        <button
+          onClick={() => navigate("/seeds")}
+          style={{
+            minHeight: "44px",
+            minWidth: "44px",
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+            fontSize: "12px",
+            color: "#666",
+          }}
+        >
+          Seeds
+        </button>
+        <button
+          onClick={() => navigate("/planted")}
+          style={{
+            minHeight: "44px",
+            minWidth: "44px",
+            border: "none",
+            background: "none",
+            cursor: "pointer",
+            fontSize: "12px",
+            color: "#666",
+          }}
+        >
+          Planted
+        </button>
+      </nav>
     </div>
   );
 }
