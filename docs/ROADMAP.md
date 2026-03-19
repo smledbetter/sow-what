@@ -1,25 +1,25 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 0
-- **Coverage**: N/A
-- **LOC**: 0 (planning only)
-- **Milestone**: Sprint 0 complete — project scaffolding next
+- **Tests**: 39 unit/component + 6 E2E = 45 total
+- **Coverage**: 95.91% statements, 100% branches
+- **LOC**: 1102
+- **Milestone**: Sprint 1 complete -- Seed Inventory UI next
 
 ## Phases
 
-### Phase 1: Project Scaffold + Data Layer (Sprint 1)
-- [ ] Vite + React + TypeScript project init
-- [ ] Vitest + React Testing Library + coverage config
-- [ ] `fake-indexeddb` in Vitest setupFiles (required for Dexie in tests)
-- [ ] Playwright setup: config with `vite preview` webServer, mobile viewport (375x812)
-- [ ] vite-plugin-pwa setup (manifest, service worker)
-- [ ] React Router with route shells for all screens
-- [ ] Dexie.js database: schema for seeds, plantings, weatherSnapshots, settings
-- [ ] TypeScript interfaces for all data model types
-- [ ] Seed data access layer (CRUD functions) with unit tests
-- [ ] Smoke E2E test: app loads, routes navigate
-- **Done when**: all 5 gates pass (`tsc`, `eslint`, `vitest --coverage`, `playwright test`); routes render empty shells; DB CRUD works in tests
+### Phase 1: Project Scaffold + Data Layer (Sprint 1) -- DONE
+- [x] Vite + React + TypeScript project init
+- [x] Vitest + React Testing Library + coverage config
+- [x] `fake-indexeddb` in Vitest setupFiles (required for Dexie in tests)
+- [x] Playwright setup: config with `vite preview` webServer, mobile viewport (375x812)
+- [x] vite-plugin-pwa setup (manifest, service worker)
+- [x] React Router with route shells for all screens
+- [x] Dexie.js database: schema for seeds, plantings, weatherSnapshots, settings
+- [x] TypeScript interfaces for all data model types
+- [x] Seed data access layer (CRUD functions) with unit tests
+- [x] Smoke E2E test: app loads, routes navigate
+- **Done**: all 5 gates pass; 39 tests + 6 E2E; 95.91% coverage
 
 ### Phase 2: Seed Inventory (Sprint 2)
 - [ ] Seed list view (`/seeds`) — display all seeds, search/filter
