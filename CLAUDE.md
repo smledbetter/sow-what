@@ -15,21 +15,41 @@ A mobile-first, local-first gardening companion that tells you exactly what to p
 
 Run with `/gate`. Commands are in `~/.flowstate/sow-what/flowstate.config.md`.
 
-- `echo 'TODO: build/typecheck command'`
-- `echo 'TODO: lint command'`
-- `echo 'TODO: test command'`
-- `echo 'TODO: coverage command'`
-<!-- TODO: Gate commands are placeholders. Sprint 0 will verify and update these. -->
+- `npx tsc --noEmit`
+- `npx eslint .`
+- `npx vitest run`
+- `npx vitest run --coverage`
 
 ## Conventions
 
 - Start each sprint in a fresh session. One sprint = one session.
 
+### Stack
+- **Language**: TypeScript (strict mode)
+- **Framework**: Vite + React 19
+- **Data**: Dexie.js (IndexedDB) — local-first, no server
+- **Routing**: React Router
+- **Offline**: vite-plugin-pwa + Workbox
+- **Weather**: Open-Meteo (free, no API key)
+- **Testing**: Vitest + React Testing Library + @testing-library/user-event
+- **Coverage**: v8 via Vitest — floor: 90% statements, 85% branches
 
-<!-- TODO: Sprint 0 fills in language-specific conventions below:
-  - Language, framework, test runner
-  - Lint rules and coverage floors
-  - Coding standards specific to this stack
-  - Any constraints from the PRD
-  - Known issues and gotchas
--->
+### Coding Standards
+- All files TypeScript (`.ts` / `.tsx`), strict mode enabled
+- camelCase for fields and variables, PascalCase for components and types
+- Dates stored as ISO strings (`YYYY-MM-DD`), never Date objects in the DB
+- No `any` types — use `unknown` + type guards when type is genuinely unknown
+- Prefer named exports over default exports
+- Keep components small: if a component exceeds ~150 lines, extract sub-components
+- All Dexie DB access goes through a data access layer (`src/db/`), not directly from components
+
+### UI Constraints (from PRD)
+- Mobile-first: design for 375px width, scale up
+- Tap targets minimum 44x44px (dirty hands in the garden)
+- Minimal typing — prefer select/toggle over text input where possible
+- Large, readable text — outdoor visibility matters
+
+### Known Issues / Gotchas
+- iOS Safari can evict PWA IndexedDB storage after ~7 days of non-use (mitigated by regular use)
+- Service worker updates require refresh — use `prompt` update strategy in vite-plugin-pwa
+- Dexie.js does not enforce foreign keys — reference integrity is app-level responsibility

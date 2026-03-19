@@ -1,0 +1,74 @@
+# Sow What — Roadmap
+
+## Current State
+- **Tests**: 0
+- **Coverage**: N/A
+- **LOC**: 0 (planning only)
+- **Milestone**: Sprint 0 complete — project scaffolding next
+
+## Phases
+
+### Phase 1: Project Scaffold + Data Layer (Sprint 1)
+- [ ] Vite + React + TypeScript project init
+- [ ] Vitest + React Testing Library + coverage config
+- [ ] vite-plugin-pwa setup (manifest, service worker)
+- [ ] React Router with route shells for all screens
+- [ ] Dexie.js database: schema for seeds, plantings, weatherSnapshots, settings
+- [ ] TypeScript interfaces for all data model types
+- [ ] Seed data access layer (CRUD functions) with tests
+- **Done when**: `tsc`, `eslint`, `vitest run --coverage` all pass; routes render empty shells; DB CRUD works in tests
+
+### Phase 2: Seed Inventory (Sprint 2)
+- [ ] Seed list view (`/seeds`) — display all seeds, search/filter
+- [ ] Seed detail/edit view (`/seeds/:id`) — add, edit, delete
+- [ ] CSV import (parse CSV → bulk insert into Dexie)
+- [ ] CSV export (Dexie → downloadable CSV)
+- [ ] Mobile-friendly form inputs (large tap targets, minimal typing)
+- **Done when**: full CRUD on seeds works in UI; CSV round-trip (import → export) preserves data; tests pass
+
+### Phase 3: Daily Checklists (Sprint 3)
+- [ ] Fuzzy date parser (maps "Late Feb", "Early March", compound ranges → concrete date windows)
+- [ ] Checklist query: filter seeds whose sow window includes today
+- [ ] Home screen (`/`) with Cold Sow / Direct Sow tabs
+- [ ] Each item shows: plant name, varietal, soil temp range
+- [ ] Tap to check off (visual strike-through, toggleable)
+- **Done when**: date parser handles all PRD label formats; checklist shows correct seeds for any given date; tests cover happy path + edge cases (boundary dates, empty lists, compound ranges)
+
+### Phase 4: Planting Flow (Sprint 4)
+- [ ] Check-off creates a planting record in Dexie
+- [ ] Auto-capture weather snapshot on plant (stub for now — hardcoded or Open-Meteo if ready)
+- [ ] Planting detail view (`/planted/:id`) — edit bed location, germination date, harvest date
+- [ ] Uncheck removes planting record (or marks as undone)
+- **Done when**: checking a seed creates a planting with weather snapshot; detail view allows editing all fields; tests pass
+
+### Phase 5: Planted List (Sprint 5)
+- [ ] Planted list view (`/planted`) — all plantings with details
+- [ ] Sort by date planted, plant name, method
+- [ ] Filter by sow method (cold sow / direct sow)
+- [ ] Show weather conditions inline
+- **Done when**: planted list displays all records with correct data; sorting and filtering work; tests pass
+
+### Phase 6: Weather Integration (Sprint 6)
+- [ ] Open-Meteo client: fetch current conditions + 7-day forecast
+- [ ] Cache weather data in Dexie for offline access
+- [ ] Weather view (`/weather`) — current conditions + forecast + frost alerts
+- [ ] Auto-capture real weather on planting (replace Sprint 4 stub)
+- [ ] Frost warning: highlight days where forecast temp <= 32F
+- **Done when**: weather fetches and displays correctly; offline falls back to cache; frost alerts surface; planting records get real weather; tests pass
+
+### Phase 7: PIN Auth + Settings (Sprint 7)
+- [ ] PIN entry screen (`/pin`) — numeric pad
+- [ ] PIN stored (hashed) in Dexie settings
+- [ ] Session gate: redirect to `/pin` if not authenticated
+- [ ] Settings screen (`/settings`) — change PIN, set frost dates, set season year
+- [ ] Data export from settings (CSV download)
+- **Done when**: app requires PIN on load; PIN can be set/changed; frost dates are configurable and used by checklist logic; tests pass
+
+### Phase 8: Polish + Offline Hardening (Sprint 8)
+- [ ] PWA manifest tuning (icons, theme color, splash)
+- [ ] Service worker: verify full offline capability (all routes, all assets)
+- [ ] UI polish: loading states, empty states, error messages
+- [ ] Touch UX audit: tap target sizes (min 44px), one-handed reachability
+- [ ] Performance audit: Lighthouse PWA score
+- [ ] Edge cases: first-run experience (no seeds, no PIN set), season rollover
+- **Done when**: Lighthouse PWA score >= 90; all routes work offline; touch targets meet spec; edge cases handled; tests pass

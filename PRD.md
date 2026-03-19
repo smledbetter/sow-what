@@ -86,10 +86,11 @@ Full list of seeds in the database:
 
 ### 5. Offline / Local-First
 
-- All data stored locally on device
-- App is fully functional without network connectivity
+- All data stored in IndexedDB via Dexie.js — no server, no cloud
+- PWA service worker (vite-plugin-pwa + Workbox) precaches all app assets
+- App loads and functions fully without network after first visit
 - Weather data syncs when online; uses last-cached data when offline
-- No account creation or cloud dependency
+- Installable to home screen on iOS and Android via PWA manifest
 
 ### 6. PIN Authentication
 
@@ -99,81 +100,95 @@ Full list of seeds in the database:
 ## Tech Stack
 
 ### Frontend
-- **React Native** (Expo) — cross-platform mobile with a single codebase
+- **Vite + React + TypeScript** — mobile-first PWA, pure SPA (no SSR)
 - Minimal, tap-friendly UI optimized for outdoor / one-handed use
+- Installable to home screen via PWA manifest
 
 ### Data Layer
-- **SQLite** (via expo-sqlite) — local-first, no server dependency
-- Schema supports seeds, plantings, weather snapshots, and user settings
+- **Dexie.js** (IndexedDB) — local-first, no server dependency
+- Stores seeds, plantings, weather snapshots, and user settings
+- Simple, mature library (used by WhatsApp Web, Microsoft To Do)
+
+### Offline / PWA
+- **vite-plugin-pwa** + Workbox — service worker precaches all assets
+- App loads instantly after first visit, even without network
+- Weather data cached locally; syncs when online
 
 ### Weather API
 - **Open-Meteo** — free, no API key required, supports forecast and historical data
-- Cached locally for offline resilience
+
+### Testing
+- **Vitest** + **React Testing Library** — native Vite integration, fast, Jest-compatible
+- Coverage via Vitest's built-in v8 provider
 
 ### Build & Deploy
-- **Expo EAS** — build and distribute to iOS (primary target)
-- OTA updates via Expo for quick iterations
+- Static files served from VPS (or any static host)
+- No app store, no Apple Developer account required
+- OTA updates by deploying new static build
 
 ## Data Model (High-Level)
 
+All data stored in IndexedDB via Dexie.js. IDs are auto-incrementing. Dates stored as ISO strings (YYYY-MM-DD).
+
 ### seeds
-| Column | Type | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| id | INTEGER | PK |
-| plant | TEXT | e.g., "Lettuce" |
-| varietal | TEXT | e.g., "Forellenschluss" |
-| seed_or_start | TEXT | "Seed" or "Start" |
-| purchased | BOOLEAN | |
-| cold_sow_start | DATE | Start of cold sow window |
-| cold_sow_end | DATE | End of cold sow window |
-| direct_sow_start | DATE | Start of direct sow window |
-| direct_sow_end | DATE | End of direct sow window |
-| soil_temp_min | INTEGER | Degrees F |
-| soil_temp_max | INTEGER | Degrees F |
-| notes | TEXT | |
+| id? | number | Auto-increment PK |
+| plant | string | e.g., "Lettuce" |
+| varietal | string | e.g., "Forellenschluss" |
+| seedOrStart | string | "Seed" or "Start" |
+| purchased | boolean | |
+| coldSowStart | string | Start of cold sow window (ISO date) |
+| coldSowEnd | string | End of cold sow window (ISO date) |
+| directSowStart | string | Start of direct sow window (ISO date) |
+| directSowEnd | string | End of direct sow window (ISO date) |
+| soilTempMin | number | Degrees F |
+| soilTempMax | number | Degrees F |
+| notes | string | |
 
 ### plantings
-| Column | Type | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| id | INTEGER | PK |
-| seed_id | INTEGER | FK to seeds |
-| method | TEXT | "cold_sow" or "direct_sow" |
-| date_planted | DATE | |
-| bed_location | TEXT | User-entered |
-| germination_date | DATE | User-entered when observed |
-| expected_harvest | DATE | User-entered or calculated |
-| weather_snapshot_id | INTEGER | FK to weather_snapshots |
+| id? | number | Auto-increment PK |
+| seedId | number | Reference to seeds |
+| method | string | "cold_sow" or "direct_sow" |
+| datePlanted | string | ISO date |
+| bedLocation | string | User-entered |
+| germinationDate | string | User-entered when observed |
+| expectedHarvest | string | User-entered or calculated |
+| weatherSnapshotId | number | Reference to weather_snapshots |
 
-### weather_snapshots
-| Column | Type | Notes |
+### weatherSnapshots
+| Field | Type | Notes |
 |---|---|---|
-| id | INTEGER | PK |
-| date | DATE | |
-| temp_high | REAL | Degrees F |
-| temp_low | REAL | Degrees F |
-| precipitation | REAL | Inches |
-| conditions | TEXT | e.g., "Partly cloudy" |
-| raw_json | TEXT | Full API response for reference |
+| id? | number | Auto-increment PK |
+| date | string | ISO date |
+| tempHigh | number | Degrees F |
+| tempLow | number | Degrees F |
+| precipitation | number | Inches |
+| conditions | string | e.g., "Partly cloudy" |
+| rawJson | string | Full API response for reference |
 
 ### settings
-| Column | Type | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| key | TEXT | PK |
-| value | TEXT | JSON-encoded |
+| key | string | PK (explicit, not auto-increment) |
+| value | string | JSON-encoded |
 
 Keys: `pin`, `last_frost`, `first_frost`, `season_year`
 
 ## Screen Map
 
-1. **PIN Entry** — numeric pad, unlock to home
-2. **Home — Cold Sow tab** — today's cold sow checklist
-3. **Home — Direct Sow tab** — today's direct sow checklist
-4. **Planted List** — all plantings with details, sortable/filterable
-5. **Planting Detail** — edit bed location, germination date, harvest date
-6. **Seed Inventory** — full seed list, add/edit/delete
-7. **Seed Detail / Edit** — single seed form
-8. **Weather / Forecast** — current conditions + 7-day forecast with frost alerts
-9. **Settings** — PIN, frost dates, export data
+Client-side routing (e.g., React Router). All views are SPA routes — no server round-trips.
+
+1. **`/pin`** — PIN Entry — numeric pad, unlock to home
+2. **`/`** — Home — Cold Sow tab (default) and Direct Sow tab — today's checklists
+3. **`/planted`** — Planted List — all plantings with details, sortable/filterable
+4. **`/planted/:id`** — Planting Detail — edit bed location, germination date, harvest date
+5. **`/seeds`** — Seed Inventory — full seed list, add/edit/delete
+6. **`/seeds/:id`** — Seed Detail / Edit — single seed form
+7. **`/weather`** — Weather / Forecast — current conditions + 7-day forecast with frost alerts
+8. **`/settings`** — Settings — PIN, frost dates, export data
 
 ## Success Criteria
 
