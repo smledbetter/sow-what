@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 79 unit/component + 8 E2E = 87 total
-- **Coverage**: 95.51% statements, 89.16% branches
-- **LOC**: 2644
-- **Milestone**: Sprint 2 complete -- Daily Checklists next
+- **Tests**: 130 unit/component + 11 E2E = 141 total
+- **Coverage**: 94.28% statements, 91.23% branches
+- **LOC**: 3552
+- **Milestone**: Sprint 3 complete -- Planting Flow next
 
 ## Phases
 
@@ -29,13 +29,13 @@
 - [x] Mobile-friendly form inputs (large tap targets, minimal typing)
 - **Done**: all 5 gates pass; 79 tests + 8 E2E; 95.51% coverage
 
-### Phase 3: Daily Checklists (Sprint 3)
-- [ ] Fuzzy date parser (maps "Late Feb", "Early March", compound ranges → concrete date windows)
-- [ ] Checklist query: filter seeds whose sow window includes today
-- [ ] Home screen (`/`) with Cold Sow / Direct Sow tabs
-- [ ] Each item shows: plant name, varietal, soil temp range
-- [ ] Tap to check off (visual strike-through, toggleable)
-- **Done when**: date parser handles all PRD label formats; checklist shows correct seeds for any given date; tests cover happy path + edge cases (boundary dates, empty lists, compound ranges)
+### Phase 3: Daily Checklists (Sprint 3) -- DONE
+- [x] Fuzzy date parser (maps "Late Feb", "Early March", compound ranges → concrete date windows)
+- [x] Checklist query: filter seeds whose sow window includes today
+- [x] Home screen (`/`) with Cold Sow / Direct Sow tabs
+- [x] Each item shows: plant name, varietal, soil temp range
+- [x] Tap to check off (visual strike-through, toggleable)
+- **Done**: all 5 gates pass; 130 tests + 11 E2E; 94.28% coverage
 
 ### Phase 4: Planting Flow (Sprint 4)
 - [ ] Check-off creates a planting record in Dexie
