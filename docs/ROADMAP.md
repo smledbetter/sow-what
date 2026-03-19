@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 39 unit/component + 6 E2E = 45 total
-- **Coverage**: 95.91% statements, 100% branches
-- **LOC**: 1102
-- **Milestone**: Sprint 1 complete -- Seed Inventory UI next
+- **Tests**: 79 unit/component + 8 E2E = 87 total
+- **Coverage**: 95.51% statements, 89.16% branches
+- **LOC**: 2644
+- **Milestone**: Sprint 2 complete -- Daily Checklists next
 
 ## Phases
 
@@ -21,13 +21,13 @@
 - [x] Smoke E2E test: app loads, routes navigate
 - **Done**: all 5 gates pass; 39 tests + 6 E2E; 95.91% coverage
 
-### Phase 2: Seed Inventory (Sprint 2)
-- [ ] Seed list view (`/seeds`) — display all seeds, search/filter
-- [ ] Seed detail/edit view (`/seeds/:id`) — add, edit, delete
-- [ ] CSV import (parse CSV → bulk insert into Dexie)
-- [ ] CSV export (Dexie → downloadable CSV)
-- [ ] Mobile-friendly form inputs (large tap targets, minimal typing)
-- **Done when**: full CRUD on seeds works in UI; CSV round-trip (import → export) preserves data; tests pass
+### Phase 2: Seed Inventory (Sprint 2) -- DONE
+- [x] Seed list view (`/seeds`) — display all seeds, search/filter
+- [x] Seed detail/edit view (`/seeds/:id`) — add, edit, delete
+- [x] CSV import (parse CSV → bulk insert into Dexie)
+- [x] CSV export (Dexie → downloadable CSV)
+- [x] Mobile-friendly form inputs (large tap targets, minimal typing)
+- **Done**: all 5 gates pass; 79 tests + 8 E2E; 95.51% coverage
 
 ### Phase 3: Daily Checklists (Sprint 3)
 - [ ] Fuzzy date parser (maps "Late Feb", "Early March", compound ranges → concrete date windows)
