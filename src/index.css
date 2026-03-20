@@ -30,4 +30,32 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   -webkit-text-size-adjust: 100%;
+  /* Prevent pull-to-refresh on mobile when scrolling at top */
+  overscroll-behavior-y: contain;
+}
+
+/* Ensure all interactive elements meet 44px minimum tap target */
+button, [role="tab"], [role="listitem"][tabindex], a {
+  min-height: 44px;
+}
+
+/* Loading spinner for async states */
+@keyframes sw-spin {
+  to { transform: rotate(360deg); }
+}
+.sw-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: sw-spin 0.8s linear infinite;
+}
+
+/* Safe area padding for notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  nav[aria-label="Main navigation"] {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
 }

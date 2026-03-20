@@ -10,7 +10,6 @@ import {
 import { createPlantingDAO } from "../db/plantings.ts";
 import { BottomNav } from "../components/BottomNav.tsx";
 import { fetchWeather } from "../utils/weather-client.ts";
-import type { ForecastDay } from "../utils/weather-client.ts";
 import { getPlantingWarnings, shortDayLabel } from "../utils/weather-warnings.ts";
 import type { PlantingWarning } from "../utils/weather-warnings.ts";
 import type { SowWhatDB } from "../db/database.ts";
