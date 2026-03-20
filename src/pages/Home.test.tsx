@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import Dexie from "dexie";
 import { SowWhatDB } from "../db/database.ts";
 import { createSeedDAO } from "../db/seeds.ts";
+import { createPlantingDAO } from "../db/plantings.ts";
+import { createWeatherDAO } from "../db/weather.ts";
 import { Home } from "./Home.tsx";
 import { Seeds } from "./Seeds.tsx";
 
@@ -130,7 +132,9 @@ describe("Home page", () => {
 
     // Click the list item
     await user.click(plantName.closest("li")!);
-    expect(plantName).toHaveStyle({ textDecoration: "line-through" });
+    await waitFor(() => {
+      expect(plantName).toHaveStyle({ textDecoration: "line-through" });
+    });
   });
 
   it("unchecks a seed on second tap", async () => {
@@ -146,11 +150,15 @@ describe("Home page", () => {
 
     // Check
     await user.click(listItem);
-    expect(plantName).toHaveStyle({ textDecoration: "line-through" });
+    await waitFor(() => {
+      expect(plantName).toHaveStyle({ textDecoration: "line-through" });
+    });
 
     // Uncheck
     await user.click(listItem);
-    expect(plantName).not.toHaveStyle({ textDecoration: "line-through" });
+    await waitFor(() => {
+      expect(plantName).not.toHaveStyle({ textDecoration: "line-through" });
+    });
   });
 
   it("shows 'View Seed Inventory' link when nothing to sow", () => {
@@ -186,5 +194,148 @@ describe("Home page", () => {
     expect(screen.getByRole("button", { name: "Today" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Seeds" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Planted" })).toBeInTheDocument();
+  });
+
+  // Sprint 4 additions: planting record creation/removal
+
+  it("creates a planting record in Dexie on check-off", async () => {
+    const user = userEvent.setup();
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    renderHome("2026-03-05");
+    const plantName = await screen.findByText("Lettuce");
+    await user.click(plantName.closest("li")!);
+
+    // Wait for the planting to be written
+    await waitFor(async () => {
+      const plantingDAO = createPlantingDAO(db);
+      const all = await plantingDAO.getAll();
+      expect(all).toHaveLength(1);
+      expect(all[0].method).toBe("cold_sow");
+      expect(all[0].datePlanted).toBe("2026-03-05");
+    });
+  });
+
+  it("creates a weather snapshot on check-off", async () => {
+    const user = userEvent.setup();
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    renderHome("2026-03-05");
+    const plantName = await screen.findByText("Lettuce");
+    await user.click(plantName.closest("li")!);
+
+    await waitFor(async () => {
+      const weatherDAO = createWeatherDAO(db);
+      const all = await weatherDAO.getAll();
+      expect(all).toHaveLength(1);
+      expect(all[0].date).toBe("2026-03-05");
+    });
+  });
+
+  it("removes planting record on uncheck", async () => {
+    const user = userEvent.setup();
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    renderHome("2026-03-05");
+    const plantName = await screen.findByText("Lettuce");
+    const li = plantName.closest("li")!;
+
+    // Check
+    await user.click(li);
+    await waitFor(async () => {
+      const plantingDAO = createPlantingDAO(db);
+      expect(await plantingDAO.getAll()).toHaveLength(1);
+    });
+
+    // Uncheck
+    await user.click(li);
+    await waitFor(async () => {
+      const plantingDAO = createPlantingDAO(db);
+      expect(await plantingDAO.getAll()).toHaveLength(0);
+    });
+  });
+
+  it("removes weather snapshot on uncheck", async () => {
+    const user = userEvent.setup();
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    renderHome("2026-03-05");
+    const plantName = await screen.findByText("Lettuce");
+    const li = plantName.closest("li")!;
+
+    // Check then uncheck
+    await user.click(li);
+    await waitFor(async () => {
+      const wdao = createWeatherDAO(db);
+      expect(await wdao.getAll()).toHaveLength(1);
+    });
+
+    await user.click(li);
+    await waitFor(async () => {
+      const wdao = createWeatherDAO(db);
+      expect(await wdao.getAll()).toHaveLength(0);
+    });
+  });
+
+  it("uses correct method for direct sow tab check-off", async () => {
+    const user = userEvent.setup();
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Basil", directSowStart: "2026-04-01", directSowEnd: "2026-05-15", coldSowStart: "", coldSowEnd: "" }),
+    ]);
+
+    renderHome("2026-04-10");
+    await user.click(screen.getByRole("tab", { name: "Direct Sow" }));
+    const plantName = await screen.findByText("Basil");
+    await user.click(plantName.closest("li")!);
+
+    await waitFor(async () => {
+      const plantingDAO = createPlantingDAO(db);
+      const all = await plantingDAO.getAll();
+      expect(all).toHaveLength(1);
+      expect(all[0].method).toBe("direct_sow");
+    });
+  });
+
+  it("restores checked state from existing plantings", async () => {
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    // Get the seed ID
+    const seeds = await seedDAO.getAll();
+    const seedId = seeds[0].id!;
+
+    // Pre-create a planting for today
+    const plantingDAO = createPlantingDAO(db);
+    await plantingDAO.add({
+      seedId,
+      method: "cold_sow",
+      datePlanted: "2026-03-05",
+      bedLocation: "",
+      germinationDate: "",
+      expectedHarvest: "",
+      weatherSnapshotId: 1,
+    });
+
+    renderHome("2026-03-05");
+    const plantName = await screen.findByText("Lettuce");
+    // Should already be checked (strike-through)
+    await waitFor(() => {
+      expect(plantName).toHaveStyle({ textDecoration: "line-through" });
+    });
   });
 });

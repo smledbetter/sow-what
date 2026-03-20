@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import type { Seed, SowMethod } from "../types/index.ts";
 import { createSeedDAO } from "../db/seeds.ts";
 import { getSeedsForDate, todayISO } from "../utils/checklist.ts";
+import {
+  createPlantingRecord,
+  removePlantingRecord,
+} from "../utils/planting.ts";
+import { createPlantingDAO } from "../db/plantings.ts";
 import type { SowWhatDB } from "../db/database.ts";
 
 export interface HomeProps {
@@ -15,11 +20,14 @@ export function Home({ db, today }: HomeProps = {}) {
   const navigate = useNavigate();
   const [seeds, setSeeds] = useState<Seed[]>([]);
   const [activeTab, setActiveTab] = useState<SowMethod>("cold_sow");
-  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+  /** Maps seedId → plantingId for seeds checked off today */
+  const [plantedMap, setPlantedMap] = useState<Map<number, number>>(new Map());
+  const [busy, setBusy] = useState(false);
 
   const dao = useMemo(() => (db ? createSeedDAO(db) : createSeedDAO()), [db]);
   const currentDate = today ?? todayISO();
 
+  // Load seeds
   useEffect(() => {
     let cancelled = false;
     dao.getAll().then((all) => {
@@ -28,22 +36,54 @@ export function Home({ db, today }: HomeProps = {}) {
     return () => { cancelled = true; };
   }, [dao]);
 
+  // Load existing plantings for today to restore checked state
+  useEffect(() => {
+    let cancelled = false;
+    const plantingDAO = db ? createPlantingDAO(db) : createPlantingDAO();
+    plantingDAO.getAll().then((all) => {
+      if (cancelled) return;
+      const todayPlantings = new Map<number, number>();
+      for (const p of all) {
+        if (p.datePlanted === currentDate && p.id !== undefined) {
+          todayPlantings.set(p.seedId, p.id);
+        }
+      }
+      setPlantedMap(todayPlantings);
+    });
+    return () => { cancelled = true; };
+  }, [db, currentDate]);
+
   const checklistSeeds = useMemo(
     () => getSeedsForDate(seeds, activeTab, currentDate),
     [seeds, activeTab, currentDate]
   );
 
-  const toggleCheck = useCallback((seedId: number) => {
-    setCheckedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(seedId)) {
-        next.delete(seedId);
+  const toggleCheck = useCallback(async (seedId: number) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const existingPlantingId = plantedMap.get(seedId);
+      if (existingPlantingId !== undefined) {
+        // Uncheck: remove planting record
+        await removePlantingRecord(existingPlantingId, db);
+        setPlantedMap((prev) => {
+          const next = new Map(prev);
+          next.delete(seedId);
+          return next;
+        });
       } else {
-        next.add(seedId);
+        // Check: create planting record
+        const result = await createPlantingRecord(seedId, activeTab, currentDate, db);
+        setPlantedMap((prev) => {
+          const next = new Map(prev);
+          next.set(seedId, result.plantingId);
+          return next;
+        });
       }
-      return next;
-    });
-  }, []);
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, plantedMap, activeTab, currentDate, db]);
 
   const tabStyle = (tab: SowMethod): React.CSSProperties => ({
     flex: 1,
@@ -115,7 +155,7 @@ export function Home({ db, today }: HomeProps = {}) {
           aria-label="Checklist"
         >
           {checklistSeeds.map((seed) => {
-            const isChecked = checkedIds.has(seed.id!);
+            const isChecked = plantedMap.has(seed.id!);
             return (
               <li
                 key={seed.id}
@@ -130,7 +170,7 @@ export function Home({ db, today }: HomeProps = {}) {
                   gap: "12px",
                   opacity: isChecked ? 0.6 : 1,
                 }}
-                onClick={() => toggleCheck(seed.id!)}
+                onClick={() => { void toggleCheck(seed.id!); }}
               >
                 <span
                   style={{

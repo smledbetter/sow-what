@@ -22,6 +22,10 @@ export function createWeatherDAO(db: SowWhatDB = defaultDb) {
     getByDate(date: string): Promise<WeatherSnapshot | undefined> {
       return db.weatherSnapshots.where("date").equals(date).first();
     },
+
+    delete(id: number): Promise<void> {
+      return db.weatherSnapshots.delete(id);
+    },
   };
 }
 

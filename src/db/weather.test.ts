@@ -74,4 +74,11 @@ describe("weather snapshots data access", () => {
     const retrieved = await dao.getById(id);
     expect(retrieved!.rawJson).toBe('{"test": true}');
   });
+
+  it("deletes a weather snapshot", async () => {
+    const id = await dao.add(makeSnapshot());
+    await dao.delete(id);
+    const deleted = await dao.getById(id);
+    expect(deleted).toBeUndefined();
+  });
 });

@@ -43,9 +43,9 @@ describe("route shells", () => {
     expect(screen.getByText("Planted")).toBeInTheDocument();
   });
 
-  it("renders PlantingDetail at /planted/:id", () => {
+  it("renders PlantingDetail at /planted/:id", async () => {
     renderRoute("/planted/42");
-    expect(screen.getByText("Planting #42")).toBeInTheDocument();
+    expect(await screen.findByText("Planting Not Found")).toBeInTheDocument();
   });
 
   it("renders Seeds at /seeds", async () => {
