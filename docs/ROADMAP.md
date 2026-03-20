@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 159 unit/component + 11 E2E = 170 total
-- **Coverage**: 94.52% statements, 87.64% branches
-- **LOC**: 4461
-- **Milestone**: Sprint 4 complete -- Planted List next
+- **Tests**: 173 unit/component + 14 E2E = 187 total
+- **Coverage**: 94.05% statements, 87.3% branches
+- **LOC**: ~5285
+- **Milestone**: Sprint 5 complete -- Weather Integration next
 
 ## Phases
 
@@ -44,13 +44,13 @@
 - [x] Uncheck removes planting record (or marks as undone)
 - **Done**: all 5 gates pass; 159 tests + 11 E2E; 94.52% coverage
 
-### Phase 5: Planted List (Sprint 5)
-- [ ] Planted list view (`/planted`) — all plantings with details
-- [ ] Sort by date planted, plant name, method
-- [ ] Filter by sow method (cold sow / direct sow)
-- [ ] Show weather conditions inline
-- [ ] E2E: full planting journey (add seed → checklist → check off → appears in planted list)
-- **Done when**: planted list displays all records with correct data; sorting and filtering work; E2E planting journey passes; tests pass
+### Phase 5: Planted List (Sprint 5) -- DONE
+- [x] Planted list view (`/planted`) — all plantings with details
+- [x] Sort by date planted, plant name, method
+- [x] Filter by sow method (cold sow / direct sow)
+- [x] Show weather conditions inline
+- [x] E2E: full planting journey (add seed → checklist → check off → appears in planted list)
+- **Done**: all 5 gates pass; 173 tests + 14 E2E; 94.05% coverage
 
 ### Phase 6: Weather Integration (Sprint 6)
 - [ ] Open-Meteo client: fetch current conditions + 7-day forecast
