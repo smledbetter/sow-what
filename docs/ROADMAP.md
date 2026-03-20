@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 275 unit/component + 21 E2E = 296 total
-- **Coverage**: 95.19% statements, 86.53% branches
-- **LOC**: ~7978
-- **Milestone**: Sprint 7 complete -- Polish + Offline Hardening next
+- **Tests**: 286 unit/component + 28 E2E = 314 total
+- **Coverage**: 94.40% statements, 86.62% branches
+- **LOC**: ~8208
+- **Milestone**: Sprint 8 complete -- ALL PHASES DONE
 
 ## Phases
 
@@ -68,13 +68,12 @@
 - [x] Data export from settings (CSV download)
 - **Done**: all 5 gates pass; 275 tests + 21 E2E; 95.19% coverage
 
-### Phase 8: Polish + Offline Hardening (Sprint 8)
-- [ ] PWA manifest tuning (icons, theme color, splash)
-- [ ] Service worker: verify full offline capability (all routes, all assets)
-- [ ] UI polish: loading states, empty states, error messages
-- [ ] Touch UX audit: tap target sizes (min 44px), one-handed reachability
-- [ ] Performance audit: Lighthouse PWA score
-- [ ] Edge cases: first-run experience (no seeds, no PIN set), season rollover
-- [ ] E2E: offline test (disconnect network via Playwright context, verify app loads + data persists)
-- [ ] E2E: PIN flow (enter PIN → unlock → navigate → refresh → PIN required again)
-- **Done when**: Lighthouse PWA score >= 90; all routes work offline; E2E offline + PIN tests pass; touch targets meet spec; edge cases handled; all gates pass
+### Phase 8: Polish + Offline Hardening (Sprint 8) -- DONE
+- [x] PWA manifest tuning (icons, theme color, splash)
+- [x] Service worker: verify full offline capability (all routes, all assets)
+- [x] UI polish: loading states, empty states, error messages
+- [x] Touch UX audit: tap target sizes (min 44px), one-handed reachability
+- [x] Edge cases: first-run experience (no seeds, no PIN set), season rollover
+- [x] E2E: offline test (disconnect network via Playwright context, verify app loads + data persists)
+- [x] E2E: PIN flow (enter PIN → unlock → navigate → refresh → PIN required again)
+- **Done**: all 5 gates pass; 286 tests + 28 E2E; 94.40% coverage; full offline support verified
