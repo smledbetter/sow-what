@@ -7,14 +7,15 @@ import { SeedDetail } from "./pages/SeedDetail.tsx";
 import { Weather } from "./pages/Weather.tsx";
 import { Settings } from "./pages/Settings.tsx";
 import { Pin } from "./pages/Pin.tsx";
+import { AuthGate } from "./components/AuthGate.tsx";
 
 export const router = createBrowserRouter([
-  { path: "/", element: <Home /> },
   { path: "/pin", element: <Pin /> },
-  { path: "/planted", element: <Planted /> },
-  { path: "/planted/:id", element: <PlantingDetail /> },
-  { path: "/seeds", element: <Seeds /> },
-  { path: "/seeds/:id", element: <SeedDetail /> },
-  { path: "/weather", element: <Weather /> },
-  { path: "/settings", element: <Settings /> },
+  { path: "/", element: <AuthGate><Home /></AuthGate> },
+  { path: "/planted", element: <AuthGate><Planted /></AuthGate> },
+  { path: "/planted/:id", element: <AuthGate><PlantingDetail /></AuthGate> },
+  { path: "/seeds", element: <AuthGate><Seeds /></AuthGate> },
+  { path: "/seeds/:id", element: <AuthGate><SeedDetail /></AuthGate> },
+  { path: "/weather", element: <AuthGate><Weather /></AuthGate> },
+  { path: "/settings", element: <AuthGate><Settings /></AuthGate> },
 ]);

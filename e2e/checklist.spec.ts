@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { clearDB } from "./helpers.ts";
+import { clearDB, loginWithPin } from "./helpers.ts";
 
 test.describe("daily checklist", () => {
   test("shows home screen with tabs and empty state", async ({ page }) => {
     await clearDB(page);
+    await loginWithPin(page);
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Sow What" })).toBeVisible();
     // Tabs are buttons with role="tab"
@@ -14,6 +15,7 @@ test.describe("daily checklist", () => {
 
   test("add seed with today's date window, see it on checklist, check it off", async ({ page }) => {
     await clearDB(page);
+    await loginWithPin(page);
     // First, add a seed with a cold sow window that includes today
     await page.goto("/seeds");
     await page.getByLabel("Add seed").click();
@@ -32,10 +34,6 @@ test.describe("daily checklist", () => {
       return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
     };
 
-    // The form has sections: "Cold Sow Window" with Start/End, "Soil Temperature" with Min/Max
-    // Use section headings to locate the right fields
-    // Form has: Cold Sow Start (1st), Cold Sow End (2nd), Direct Sow Start (3rd), Direct Sow End (4th)
-    // Soil Min, Soil Max are number inputs
     await page.getByRole("textbox", { name: "Start" }).first().fill(formatDate(startDate));
     await page.getByRole("textbox", { name: "End" }).first().fill(formatDate(endDate));
 
@@ -66,6 +64,7 @@ test.describe("daily checklist", () => {
 
   test("switch between Cold Sow and Direct Sow tabs", async ({ page }) => {
     await page.goto("/");
+    await loginWithPin(page);
     // Cold Sow selected by default
     const coldTab = page.getByText("Cold Sow");
     const directTab = page.getByText("Direct Sow");
