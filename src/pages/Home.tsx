@@ -9,6 +9,10 @@ import {
 } from "../utils/planting.ts";
 import { createPlantingDAO } from "../db/plantings.ts";
 import { BottomNav } from "../components/BottomNav.tsx";
+import { fetchWeather } from "../utils/weather-client.ts";
+import type { ForecastDay } from "../utils/weather-client.ts";
+import { getPlantingWarnings, shortDayLabel } from "../utils/weather-warnings.ts";
+import type { PlantingWarning } from "../utils/weather-warnings.ts";
 import type { SowWhatDB } from "../db/database.ts";
 
 export interface HomeProps {
@@ -24,6 +28,7 @@ export function Home({ db, today }: HomeProps = {}) {
   /** Maps seedId → plantingId for seeds checked off today */
   const [plantedMap, setPlantedMap] = useState<Map<number, number>>(new Map());
   const [busy, setBusy] = useState(false);
+  const [warnings, setWarnings] = useState<PlantingWarning[]>([]);
 
   const dao = useMemo(() => (db ? createSeedDAO(db) : createSeedDAO()), [db]);
   const currentDate = today ?? todayISO();
@@ -53,6 +58,16 @@ export function Home({ db, today }: HomeProps = {}) {
     });
     return () => { cancelled = true; };
   }, [db, currentDate]);
+
+  // Fetch weather warnings
+  useEffect(() => {
+    let cancelled = false;
+    fetchWeather({ db }).then((data) => {
+      if (cancelled || !data) return;
+      setWarnings(getPlantingWarnings(data.forecast));
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [db]);
 
   const checklistSeeds = useMemo(
     () => getSeedsForDate(seeds, activeTab, currentDate),
@@ -101,10 +116,38 @@ export function Home({ db, today }: HomeProps = {}) {
 
   return (
     <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto", paddingBottom: "80px" }}>
-      <h1 style={{ margin: "0 0 4px 0", fontSize: "24px" }}>Sow What</h1>
-      <p style={{ margin: "0 0 16px 0", color: "#525252", fontSize: "14px" }}>
-        {currentDate}
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ margin: "0 0 4px 0", fontSize: "24px" }}>Sow What</h1>
+          <p style={{ margin: "0 0 16px 0", color: "#525252", fontSize: "14px" }}>
+            {currentDate}
+          </p>
+        </div>
+        {warnings.length > 0 && (
+          <div
+            role="alert"
+            aria-label="Weather warnings"
+            style={{
+              backgroundColor: "#fff3e0",
+              border: "1px solid #e65100",
+              borderRadius: "8px",
+              padding: "6px 10px",
+              maxWidth: "180px",
+              fontSize: "12px",
+              lineHeight: 1.4,
+              color: "#bf360c",
+            }}
+          >
+            {warnings.map((w) => (
+              <div key={w.label} style={{ marginBottom: warnings.indexOf(w) < warnings.length - 1 ? "4px" : 0 }}>
+                <span aria-hidden="true">{w.icon}</span>{" "}
+                <strong>{w.label}</strong>{" "}
+                {w.days.map((d) => shortDayLabel(d, currentDate)).join(", ")}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div
         style={{ display: "flex", marginBottom: "16px" }}

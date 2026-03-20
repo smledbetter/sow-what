@@ -20,15 +20,30 @@ export const SETTING_KEYS = {
 export const DEFAULT_LAST_FROST = "05-18";
 export const DEFAULT_FIRST_FROST = "09-30";
 
-/** Hash a PIN string using SHA-256, returns hex string */
+/** Simple fallback hash for non-secure contexts (no crypto.subtle over HTTP) */
+function simpleHash(pin: string): string {
+  let hash = 0;
+  for (let i = 0; i < pin.length; i++) {
+    const ch = pin.charCodeAt(i);
+    hash = ((hash << 5) - hash + ch) | 0;
+  }
+  return "simple:" + Math.abs(hash).toString(16).padStart(8, "0");
+}
+
+/** Hash a PIN string using SHA-256, returns hex string.
+ * Falls back to a simple hash on non-secure contexts (HTTP without localhost). */
 export async function hashPin(pin: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(pin);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = new Uint8Array(hashBuffer);
-  return Array.from(hashArray)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  if (typeof crypto !== "undefined" && crypto.subtle) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(pin);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = new Uint8Array(hashBuffer);
+    return Array.from(hashArray)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  // Fallback for HTTP (non-secure context)
+  return simpleHash(pin);
 }
 
 /** Verify a PIN against a stored hash */
