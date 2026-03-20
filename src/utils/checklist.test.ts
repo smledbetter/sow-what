@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isInSowWindow, getSeedsForDate, todayISO } from "./checklist.ts";
+import { isInSowWindow, isAtOrPastWindow, getSeedsForDate, todayISO } from "./checklist.ts";
 import type { Seed } from "../types/index.ts";
 
 const makeSeed = (overrides: Partial<Seed> = {}): Seed => ({
@@ -52,6 +52,28 @@ describe("isInSowWindow", () => {
   });
 });
 
+describe("isAtOrPastWindow", () => {
+  it("returns true when date equals start", () => {
+    expect(isAtOrPastWindow("2026-03-01", "2026-03-01")).toBe(true);
+  });
+
+  it("returns true when date is after start", () => {
+    expect(isAtOrPastWindow("2026-05-01", "2026-03-01")).toBe(true);
+  });
+
+  it("returns false when date is before start", () => {
+    expect(isAtOrPastWindow("2026-02-28", "2026-03-01")).toBe(false);
+  });
+
+  it("returns false when start is empty", () => {
+    expect(isAtOrPastWindow("2026-03-05", "")).toBe(false);
+  });
+
+  it("returns false when date is empty", () => {
+    expect(isAtOrPastWindow("", "2026-03-01")).toBe(false);
+  });
+});
+
 describe("getSeedsForDate", () => {
   const seeds: Seed[] = [
     makeSeed({ id: 1, plant: "Lettuce", coldSowStart: "2026-02-20", coldSowEnd: "2026-03-10" }),
@@ -59,20 +81,25 @@ describe("getSeedsForDate", () => {
     makeSeed({ id: 3, plant: "Pepper", coldSowStart: "", coldSowEnd: "" }),
   ];
 
-  it("returns seeds in cold sow window for the given date", () => {
+  it("returns cold sow seeds when date is within window", () => {
     const result = getSeedsForDate(seeds, "cold_sow", "2026-03-05");
-    expect(result).toHaveLength(1);
-    expect(result[0].plant).toBe("Lettuce");
+    expect(result.find((s) => s.plant === "Lettuce")).toBeDefined();
   });
 
-  it("returns multiple seeds when overlapping windows", () => {
+  it("returns cold sow seeds when date is past the window end", () => {
     const result = getSeedsForDate(seeds, "cold_sow", "2026-03-20");
-    expect(result).toHaveLength(1);
-    expect(result[0].plant).toBe("Tomato");
+    expect(result.find((s) => s.plant === "Lettuce")).toBeDefined();
+    expect(result.find((s) => s.plant === "Tomato")).toBeDefined();
+    expect(result).toHaveLength(2);
   });
 
-  it("returns empty array when no seeds match", () => {
+  it("returns cold sow seeds well past window", () => {
     const result = getSeedsForDate(seeds, "cold_sow", "2026-06-01");
+    expect(result).toHaveLength(2); // Lettuce + Tomato still show (past start)
+  });
+
+  it("excludes cold sow seeds before their window opens", () => {
+    const result = getSeedsForDate(seeds, "cold_sow", "2026-02-15");
     expect(result).toHaveLength(0);
   });
 
@@ -81,13 +108,21 @@ describe("getSeedsForDate", () => {
     expect(result.find((s) => s.plant === "Pepper")).toBeUndefined();
   });
 
-  it("filters by direct sow method", () => {
+  it("filters by direct sow method (still uses strict window)", () => {
     const directSeeds: Seed[] = [
       makeSeed({ id: 1, directSowStart: "2026-04-01", directSowEnd: "2026-05-15" }),
       makeSeed({ id: 2, directSowStart: "2026-06-01", directSowEnd: "2026-07-15" }),
     ];
     const result = getSeedsForDate(directSeeds, "direct_sow", "2026-04-10");
     expect(result).toHaveLength(1);
+  });
+
+  it("direct sow excludes seeds past window end", () => {
+    const directSeeds: Seed[] = [
+      makeSeed({ id: 1, directSowStart: "2026-04-01", directSowEnd: "2026-05-15" }),
+    ];
+    const result = getSeedsForDate(directSeeds, "direct_sow", "2026-06-01");
+    expect(result).toHaveLength(0);
   });
 
   it("returns empty for empty seed list", () => {

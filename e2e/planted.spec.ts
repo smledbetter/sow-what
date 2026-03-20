@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { clearDB } from "./helpers.ts";
 
 test.describe("planted list", () => {
   test("shows empty state when no plantings", async ({ page }) => {
+    await clearDB(page);
     await page.goto("/planted");
     await expect(page.getByRole("heading", { name: "Planted" })).toBeVisible();
     await expect(page.getByText("No plantings yet")).toBeVisible();
@@ -9,6 +11,7 @@ test.describe("planted list", () => {
   });
 
   test("full planting journey: add seed -> checklist -> check off -> planted list", async ({ page }) => {
+    await clearDB(page);
     // Step 1: Add a seed with a cold sow window that includes today
     await page.goto("/seeds");
     await page.getByLabel("Add seed").click();
@@ -59,6 +62,7 @@ test.describe("planted list", () => {
   });
 
   test("sort and filter controls work", async ({ page }) => {
+    await clearDB(page);
     // First, create two plantings via the UI: one cold_sow and one direct_sow
     const today = new Date();
     const startDate = new Date(today);

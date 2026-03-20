@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { clearDB } from "./helpers.ts";
 
 test.describe("seed inventory", () => {
   test("add a seed, see it in list, edit it, delete it", async ({ page }) => {
+    await clearDB(page);
     // Navigate to seeds page
     await page.goto("/seeds");
     await expect(page.getByText("Seed Inventory")).toBeVisible();
@@ -67,6 +69,7 @@ test.describe("seed inventory", () => {
   });
 
   test("search filters seeds in real time", async ({ page }) => {
+    await clearDB(page);
     await page.goto("/seeds");
     await expect(page.getByText("Seed Inventory")).toBeVisible();
 

@@ -20,7 +20,18 @@ export function isInSowWindow(
   return date >= start && date <= end;
 }
 
-/** Filter seeds that are in the sow window for the given method and date. */
+/** Returns true if `date` is at or past the start of [start, end].
+ * Once the window opens, the seed stays on the checklist.
+ */
+export function isAtOrPastWindow(date: string, start: string): boolean {
+  if (!start || !date) return false;
+  return date >= start;
+}
+
+/** Filter seeds that are in the sow window for the given method and date.
+ * Cold sow: shows if today >= coldSowStart (once the window opens, it stays).
+ * Direct sow: shows if today is within [directSowStart, directSowEnd].
+ */
 export function getSeedsForDate(
   seeds: Seed[],
   method: SowMethod,
@@ -28,7 +39,7 @@ export function getSeedsForDate(
 ): Seed[] {
   return seeds.filter((seed) => {
     if (method === "cold_sow") {
-      return isInSowWindow(date, seed.coldSowStart, seed.coldSowEnd);
+      return isAtOrPastWindow(date, seed.coldSowStart);
     }
     return isInSowWindow(date, seed.directSowStart, seed.directSowEnd);
   });

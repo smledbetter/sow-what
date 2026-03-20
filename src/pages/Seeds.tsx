@@ -4,6 +4,7 @@ import type { Seed } from "../types/index.ts";
 import { createSeedDAO } from "../db/seeds.ts";
 import { parseCsv, serializeCsv, downloadCsv } from "../utils/csv.ts";
 import type { SowWhatDB } from "../db/database.ts";
+import { BottomNav } from "../components/BottomNav.tsx";
 
 export interface SeedsProps {
   db?: SowWhatDB;
@@ -81,7 +82,7 @@ export function Seeds({ db }: SeedsProps = {}) {
   };
 
   return (
-    <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto" }}>
+    <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto", paddingBottom: "80px" }}>
       <div
         style={{
           display: "flex",
@@ -209,7 +210,7 @@ export function Seeds({ db }: SeedsProps = {}) {
         </div>
       )}
 
-      <div style={{ fontSize: "14px", color: "#666", marginBottom: "8px" }}>
+      <div style={{ fontSize: "14px", color: "#525252", marginBottom: "8px" }}>
         {filteredSeeds.length} seed{filteredSeeds.length === 1 ? "" : "s"}
         {search || filterPurchased !== "all"
           ? ` (of ${seeds.length} total)`
@@ -217,7 +218,7 @@ export function Seeds({ db }: SeedsProps = {}) {
       </div>
 
       {filteredSeeds.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#999", padding: "32px 0" }}>
+        <p style={{ textAlign: "center", color: "#6b6b6b", padding: "32px 0" }}>
           {seeds.length === 0
             ? "No seeds yet. Add one or import a CSV."
             : "No seeds match your search."}
@@ -232,7 +233,10 @@ export function Seeds({ db }: SeedsProps = {}) {
             <li
               key={seed.id}
               onClick={() => navigate(`/seeds/${seed.id}`)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/seeds/${seed.id}`); } }}
               role="listitem"
+              tabIndex={0}
+              aria-label={`${seed.plant}${seed.varietal ? ` — ${seed.varietal}` : ""}`}
               style={{
                 padding: "12px",
                 borderBottom: "1px solid #eee",
@@ -247,17 +251,19 @@ export function Seeds({ db }: SeedsProps = {}) {
                 <div style={{ fontWeight: "bold", fontSize: "16px" }}>
                   {seed.plant}
                 </div>
-                <div style={{ color: "#666", fontSize: "14px" }}>
+                <div style={{ color: "#525252", fontSize: "14px" }}>
                   {seed.varietal}
                 </div>
               </div>
-              <div style={{ textAlign: "right", fontSize: "12px", color: "#999" }}>
+              <div style={{ textAlign: "right", fontSize: "12px", color: "#6b6b6b" }}>
                 {seed.purchased ? "Purchased" : "Need to buy"}
               </div>
             </li>
           ))}
         </ul>
       )}
+
+      <BottomNav />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   removePlantingRecord,
 } from "../utils/planting.ts";
 import { createPlantingDAO } from "../db/plantings.ts";
+import { BottomNav } from "../components/BottomNav.tsx";
 import type { SowWhatDB } from "../db/database.ts";
 
 export interface HomeProps {
@@ -99,9 +100,9 @@ export function Home({ db, today }: HomeProps = {}) {
   });
 
   return (
-    <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto" }}>
+    <div style={{ padding: "16px", maxWidth: "600px", margin: "0 auto", paddingBottom: "80px" }}>
       <h1 style={{ margin: "0 0 4px 0", fontSize: "24px" }}>Sow What</h1>
-      <p style={{ margin: "0 0 16px 0", color: "#666", fontSize: "14px" }}>
+      <p style={{ margin: "0 0 16px 0", color: "#525252", fontSize: "14px" }}>
         {currentDate}
       </p>
 
@@ -130,7 +131,7 @@ export function Home({ db, today }: HomeProps = {}) {
 
       {checklistSeeds.length === 0 ? (
         <div style={{ textAlign: "center", padding: "32px 0" }}>
-          <p style={{ color: "#999", fontSize: "16px" }}>
+          <p style={{ color: "#6b6b6b", fontSize: "16px" }}>
             Nothing to sow today
           </p>
           <button
@@ -160,6 +161,8 @@ export function Home({ db, today }: HomeProps = {}) {
               <li
                 key={seed.id}
                 role="listitem"
+                aria-label={`${isChecked ? "Planted: " : ""}${seed.plant}${seed.varietal ? ` — ${seed.varietal}` : ""}`}
+                tabIndex={0}
                 style={{
                   padding: "12px",
                   borderBottom: "1px solid #eee",
@@ -171,6 +174,7 @@ export function Home({ db, today }: HomeProps = {}) {
                   opacity: isChecked ? 0.6 : 1,
                 }}
                 onClick={() => { void toggleCheck(seed.id!); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); void toggleCheck(seed.id!); } }}
               >
                 <span
                   style={{
@@ -202,7 +206,7 @@ export function Home({ db, today }: HomeProps = {}) {
                   </div>
                   <div
                     style={{
-                      color: "#666",
+                      color: "#525252",
                       fontSize: "14px",
                       textDecoration: isChecked ? "line-through" : "none",
                     }}
@@ -214,7 +218,7 @@ export function Home({ db, today }: HomeProps = {}) {
                   style={{
                     textAlign: "right",
                     fontSize: "12px",
-                    color: "#999",
+                    color: "#6b6b6b",
                     flexShrink: 0,
                   }}
                 >
@@ -228,64 +232,7 @@ export function Home({ db, today }: HomeProps = {}) {
         </ul>
       )}
 
-      <nav
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "space-around",
-          borderTop: "1px solid #eee",
-          backgroundColor: "#fff",
-          padding: "8px 0",
-        }}
-        aria-label="Main navigation"
-      >
-        <button
-          onClick={() => navigate("/")}
-          style={{
-            minHeight: "44px",
-            minWidth: "44px",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            fontWeight: "bold",
-            color: "#2e7d32",
-          }}
-        >
-          Today
-        </button>
-        <button
-          onClick={() => navigate("/seeds")}
-          style={{
-            minHeight: "44px",
-            minWidth: "44px",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            color: "#666",
-          }}
-        >
-          Seeds
-        </button>
-        <button
-          onClick={() => navigate("/planted")}
-          style={{
-            minHeight: "44px",
-            minWidth: "44px",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            color: "#666",
-          }}
-        >
-          Planted
-        </button>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

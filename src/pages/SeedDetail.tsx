@@ -336,7 +336,7 @@ export function SeedDetail({ db }: SeedDetailProps = {}) {
         <div style={{ marginTop: "24px", textAlign: "center" }}>
           {confirmDelete ? (
             <div>
-              <p style={{ color: "#d32f2f", fontWeight: "bold" }}>
+              <p style={{ color: "#c62828", fontWeight: "bold" }}>
                 Delete this seed? This cannot be undone.
               </p>
               <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
@@ -346,7 +346,7 @@ export function SeedDetail({ db }: SeedDetailProps = {}) {
                     minHeight: "44px",
                     padding: "8px 24px",
                     fontSize: "16px",
-                    backgroundColor: "#d32f2f",
+                    backgroundColor: "#c62828",
                     color: "white",
                     border: "none",
                     borderRadius: "8px",
@@ -375,9 +375,9 @@ export function SeedDetail({ db }: SeedDetailProps = {}) {
                 minHeight: "44px",
                 padding: "8px 24px",
                 fontSize: "16px",
-                color: "#d32f2f",
+                color: "#c62828",
                 backgroundColor: "transparent",
-                border: "1px solid #d32f2f",
+                border: "1px solid #c62828",
                 borderRadius: "8px",
                 cursor: "pointer",
               }}

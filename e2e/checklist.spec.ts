@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { clearDB } from "./helpers.ts";
 
 test.describe("daily checklist", () => {
   test("shows home screen with tabs and empty state", async ({ page }) => {
+    await clearDB(page);
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "Sow What" })).toBeVisible();
     // Tabs are buttons with role="tab"
@@ -11,6 +13,7 @@ test.describe("daily checklist", () => {
   });
 
   test("add seed with today's date window, see it on checklist, check it off", async ({ page }) => {
+    await clearDB(page);
     // First, add a seed with a cold sow window that includes today
     await page.goto("/seeds");
     await page.getByLabel("Add seed").click();

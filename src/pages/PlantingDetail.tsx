@@ -137,8 +137,9 @@ export function PlantingDetail({ db }: PlantingDetailProps = {}) {
           background: "none",
           cursor: "pointer",
           fontSize: "14px",
-          color: "#2e7d32",
-          padding: "0",
+          color: "#1b5e20",
+          padding: "8px 0",
+          minHeight: "44px",
           marginBottom: "8px",
         }}
       >
@@ -148,7 +149,7 @@ export function PlantingDetail({ db }: PlantingDetailProps = {}) {
       <h1 style={{ fontSize: "24px", margin: "0 0 4px 0" }}>
         {seed ? `${seed.plant} — ${seed.varietal}` : `Planting #${planting.id}`}
       </h1>
-      <p style={{ color: "#666", fontSize: "14px", margin: "0 0 16px 0" }}>
+      <p style={{ color: "#525252", fontSize: "14px", margin: "0 0 16px 0" }}>
         {methodLabel[planting.method] ?? planting.method} &middot; Planted {planting.datePlanted}
       </p>
 
@@ -247,7 +248,7 @@ export function PlantingDetail({ db }: PlantingDetailProps = {}) {
           {saving ? "Saving..." : "Save Changes"}
         </button>
         {saved && (
-          <p style={{ color: "#2e7d32", fontSize: "14px", marginTop: "8px" }}>
+          <p style={{ color: "#1b5e20", fontSize: "14px", marginTop: "8px" }}>
             Changes saved!
           </p>
         )}

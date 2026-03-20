@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import type { Planting, Seed, WeatherSnapshot, SowMethod } from "../types/index.ts";
 import { createPlantingDAO } from "../db/plantings.ts";
 import { createSeedDAO } from "../db/seeds.ts";
+import { BottomNav } from "../components/BottomNav.tsx";
 import { createWeatherDAO } from "../db/weather.ts";
 import type { SowWhatDB } from "../db/database.ts";
 
@@ -133,7 +134,7 @@ export function Planted({ db }: PlantedProps = {}) {
         <p>Loading...</p>
       ) : rows.length === 0 ? (
         <div style={{ textAlign: "center", padding: "32px 0" }}>
-          <p style={{ color: "#999", fontSize: "16px" }}>No plantings yet</p>
+          <p style={{ color: "#6b6b6b", fontSize: "16px" }}>No plantings yet</p>
           <button
             onClick={() => navigate("/")}
             style={{
@@ -153,7 +154,7 @@ export function Planted({ db }: PlantedProps = {}) {
         <>
           {/* Sort controls */}
           <div style={{ marginBottom: "12px" }}>
-            <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Sort by</div>
+            <div style={{ fontSize: "13px", color: "#525252", marginBottom: "4px", fontWeight: 500 }}>Sort by</div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }} role="group" aria-label="Sort options">
               <button onClick={() => setSortField("datePlanted")} style={sortButtonStyle("datePlanted")}>
                 Date Planted
@@ -169,7 +170,7 @@ export function Planted({ db }: PlantedProps = {}) {
 
           {/* Filter controls */}
           <div style={{ marginBottom: "16px" }}>
-            <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>Filter by method</div>
+            <div style={{ fontSize: "13px", color: "#525252", marginBottom: "4px", fontWeight: 500 }}>Filter by method</div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }} role="group" aria-label="Filter options">
               <button onClick={() => setFilterMethod("all")} style={filterButtonStyle("all")}>
                 All
@@ -184,7 +185,7 @@ export function Planted({ db }: PlantedProps = {}) {
           </div>
 
           {filteredAndSorted.length === 0 ? (
-            <p style={{ color: "#999", fontSize: "16px", textAlign: "center", padding: "16px 0" }}>
+            <p style={{ color: "#6b6b6b", fontSize: "16px", textAlign: "center", padding: "16px 0" }}>
               No plantings match this filter
             </p>
           ) : (
@@ -193,6 +194,8 @@ export function Planted({ db }: PlantedProps = {}) {
                 <li
                   key={row.planting.id}
                   role="listitem"
+                  tabIndex={0}
+                  aria-label={`${row.seed?.plant ?? "Unknown"} planted ${row.planting.datePlanted}`}
                   style={{
                     padding: "12px",
                     borderBottom: "1px solid #eee",
@@ -200,26 +203,27 @@ export function Planted({ db }: PlantedProps = {}) {
                     minHeight: "44px",
                   }}
                   onClick={() => navigate(`/planted/${row.planting.id}`)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); navigate(`/planted/${row.planting.id}`); } }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                     <div style={{ fontWeight: "bold", fontSize: "16px" }}>
                       {row.seed ? `${row.seed.plant}` : `Seed #${row.planting.seedId}`}
                     </div>
-                    <div style={{ fontSize: "12px", color: "#999", flexShrink: 0 }}>
+                    <div style={{ fontSize: "12px", color: "#6b6b6b", flexShrink: 0 }}>
                       {row.planting.datePlanted}
                     </div>
                   </div>
                   {row.seed?.varietal && (
-                    <div style={{ color: "#666", fontSize: "14px" }}>
+                    <div style={{ color: "#525252", fontSize: "14px" }}>
                       {row.seed.varietal}
                     </div>
                   )}
-                  <div style={{ fontSize: "13px", color: "#666", marginTop: "4px" }}>
+                  <div style={{ fontSize: "13px", color: "#525252", marginTop: "4px" }}>
                     {methodLabel[row.planting.method] ?? row.planting.method}
                     {row.planting.bedLocation ? ` \u00B7 ${row.planting.bedLocation}` : ""}
                   </div>
                   {row.weather && (
-                    <div style={{ fontSize: "12px", color: "#999", marginTop: "2px" }}>
+                    <div style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "2px" }}>
                       {formatWeatherInline(row.weather)}
                     </div>
                   )}
@@ -230,64 +234,7 @@ export function Planted({ db }: PlantedProps = {}) {
         </>
       )}
 
-      <nav
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          display: "flex",
-          justifyContent: "space-around",
-          borderTop: "1px solid #eee",
-          backgroundColor: "#fff",
-          padding: "8px 0",
-        }}
-        aria-label="Main navigation"
-      >
-        <button
-          onClick={() => navigate("/")}
-          style={{
-            minHeight: "44px",
-            minWidth: "44px",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            color: "#666",
-          }}
-        >
-          Today
-        </button>
-        <button
-          onClick={() => navigate("/seeds")}
-          style={{
-            minHeight: "44px",
-            minWidth: "44px",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            color: "#666",
-          }}
-        >
-          Seeds
-        </button>
-        <button
-          onClick={() => navigate("/planted")}
-          style={{
-            minHeight: "44px",
-            minWidth: "44px",
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            fontSize: "12px",
-            fontWeight: "bold",
-            color: "#2e7d32",
-          }}
-        >
-          Planted
-        </button>
-      </nav>
+      <BottomNav />
     </div>
   );
 }
