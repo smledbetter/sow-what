@@ -102,11 +102,15 @@ test.describe("planted list", () => {
     await page.goto("/");
     await expect(page.getByText("Basil")).toBeVisible();
     await page.getByText("Basil").click();
+    // Wait for check-off visual confirmation (opacity changes to 0.6)
+    await expect(page.locator("li", { hasText: "Basil" })).toHaveCSS("opacity", "0.6");
 
     // Switch to direct sow tab and check off Carrot
     await page.getByText("Direct Sow").click();
     await expect(page.getByText("Carrot")).toBeVisible();
     await page.getByText("Carrot").click();
+    // Wait for check-off visual confirmation
+    await expect(page.locator("li", { hasText: "Carrot" })).toHaveCSS("opacity", "0.6");
 
     // Go to planted list
     await page.goto("/planted");

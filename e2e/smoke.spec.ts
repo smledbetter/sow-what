@@ -18,7 +18,7 @@ test.describe("smoke tests", () => {
 
   test("navigates to /weather", async ({ page }) => {
     await page.goto("/weather");
-    await expect(page.getByText("Weather")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Weather" })).toBeVisible();
   });
 
   test("navigates to /settings", async ({ page }) => {

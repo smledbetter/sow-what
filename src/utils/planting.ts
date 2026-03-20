@@ -4,18 +4,7 @@ import type { SowMethod } from "../types/index.ts";
 import { createPlantingDAO } from "../db/plantings.ts";
 import { createWeatherDAO } from "../db/weather.ts";
 import type { SowWhatDB } from "../db/database.ts";
-
-/** Stub weather snapshot for now. Will be replaced with Open-Meteo in Sprint 6. */
-function stubWeatherSnapshot(date: string) {
-  return {
-    date,
-    tempHigh: 0,
-    tempLow: 0,
-    precipitation: 0,
-    conditions: "Not recorded",
-    rawJson: "{}",
-  };
-}
+import { fetchWeatherForPlanting } from "./weather-client.ts";
 
 export interface CreatePlantingResult {
   plantingId: number;
@@ -24,18 +13,21 @@ export interface CreatePlantingResult {
 
 /**
  * Create a planting record with an associated weather snapshot.
- * Returns both IDs for tracking.
+ * Fetches real weather from Open-Meteo; falls back to stub data if offline.
+ * fetchFn is injectable for testing (defaults to global fetch).
  */
 export async function createPlantingRecord(
   seedId: number,
   method: SowMethod,
   datePlanted: string,
   db?: SowWhatDB,
+  fetchFn?: typeof fetch,
 ): Promise<CreatePlantingResult> {
   const weatherDAO = db ? createWeatherDAO(db) : createWeatherDAO();
   const plantingDAO = db ? createPlantingDAO(db) : createPlantingDAO();
 
-  const weatherSnapshotId = await weatherDAO.add(stubWeatherSnapshot(datePlanted));
+  const weatherSnapshot = await fetchWeatherForPlanting(datePlanted, { db, fetchFn });
+  const weatherSnapshotId = await weatherDAO.add(weatherSnapshot);
 
   const plantingId = await plantingDAO.add({
     seedId,

@@ -233,8 +233,10 @@ describe("Home page", () => {
     await waitFor(async () => {
       const weatherDAO = createWeatherDAO(db);
       const all = await weatherDAO.getAll();
-      expect(all).toHaveLength(1);
-      expect(all[0].date).toBe("2026-03-05");
+      // Filter out weather cache entry (__weather_cache) — only count planting snapshots
+      const plantingSnapshots = all.filter((s) => s.date !== "__weather_cache");
+      expect(plantingSnapshots).toHaveLength(1);
+      expect(plantingSnapshots[0].date).toBe("2026-03-05");
     });
   });
 
@@ -279,13 +281,17 @@ describe("Home page", () => {
     await user.click(li);
     await waitFor(async () => {
       const wdao = createWeatherDAO(db);
-      expect(await wdao.getAll()).toHaveLength(1);
+      const all = await wdao.getAll();
+      const plantingSnapshots = all.filter((s) => s.date !== "__weather_cache");
+      expect(plantingSnapshots).toHaveLength(1);
     });
 
     await user.click(li);
     await waitFor(async () => {
       const wdao = createWeatherDAO(db);
-      expect(await wdao.getAll()).toHaveLength(0);
+      const all = await wdao.getAll();
+      const plantingSnapshots = all.filter((s) => s.date !== "__weather_cache");
+      expect(plantingSnapshots).toHaveLength(0);
     });
   });
 

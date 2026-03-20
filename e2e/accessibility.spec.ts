@@ -6,6 +6,7 @@ const routes = [
   { path: "/seeds", name: "Seeds" },
   { path: "/planted", name: "Planted" },
   { path: "/seeds/new", name: "Add Seed" },
+  { path: "/weather", name: "Weather" },
 ];
 
 for (const route of routes) {
