@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 225 unit/component + 19 E2E = 244 total
-- **Coverage**: 94.28% statements, 85.78% branches
-- **LOC**: ~6547
-- **Milestone**: Sprint 6 complete -- PIN Auth + Settings next
+- **Tests**: 275 unit/component + 21 E2E = 296 total
+- **Coverage**: 95.19% statements, 86.53% branches
+- **LOC**: ~7978
+- **Milestone**: Sprint 7 complete -- Polish + Offline Hardening next
 
 ## Phases
 
@@ -60,13 +60,13 @@
 - [x] Frost warning: highlight days where forecast temp <= 32F
 - **Done**: all 5 gates pass; 225 tests + 19 E2E; 94.28% coverage
 
-### Phase 7: PIN Auth + Settings (Sprint 7)
-- [ ] PIN entry screen (`/pin`) — numeric pad
-- [ ] PIN stored (hashed) in Dexie settings
-- [ ] Session gate: redirect to `/pin` if not authenticated
-- [ ] Settings screen (`/settings`) — change PIN, set frost dates, set season year
-- [ ] Data export from settings (CSV download)
-- **Done when**: app requires PIN on load; PIN can be set/changed; frost dates are configurable and used by checklist logic; tests pass
+### Phase 7: PIN Auth + Settings (Sprint 7) -- DONE
+- [x] PIN entry screen (`/pin`) — numeric pad
+- [x] PIN stored (hashed) in Dexie settings
+- [x] Session gate: redirect to `/pin` if not authenticated
+- [x] Settings screen (`/settings`) — change PIN, set frost dates, set season year
+- [x] Data export from settings (CSV download)
+- **Done**: all 5 gates pass; 275 tests + 21 E2E; 95.19% coverage
 
 ### Phase 8: Polish + Offline Hardening (Sprint 8)
 - [ ] PWA manifest tuning (icons, theme color, splash)
