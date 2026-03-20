@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 130 unit/component + 11 E2E = 141 total
-- **Coverage**: 94.28% statements, 91.23% branches
-- **LOC**: 3552
-- **Milestone**: Sprint 3 complete -- Planting Flow next
+- **Tests**: 159 unit/component + 11 E2E = 170 total
+- **Coverage**: 94.52% statements, 87.64% branches
+- **LOC**: 4461
+- **Milestone**: Sprint 4 complete -- Planted List next
 
 ## Phases
 
@@ -37,12 +37,12 @@
 - [x] Tap to check off (visual strike-through, toggleable)
 - **Done**: all 5 gates pass; 130 tests + 11 E2E; 94.28% coverage
 
-### Phase 4: Planting Flow (Sprint 4)
-- [ ] Check-off creates a planting record in Dexie
-- [ ] Auto-capture weather snapshot on plant (stub for now — hardcoded or Open-Meteo if ready)
-- [ ] Planting detail view (`/planted/:id`) — edit bed location, germination date, harvest date
-- [ ] Uncheck removes planting record (or marks as undone)
-- **Done when**: checking a seed creates a planting with weather snapshot; detail view allows editing all fields; tests pass
+### Phase 4: Planting Flow (Sprint 4) -- DONE
+- [x] Check-off creates a planting record in Dexie
+- [x] Auto-capture weather snapshot on plant (stub for now — hardcoded or Open-Meteo if ready)
+- [x] Planting detail view (`/planted/:id`) — edit bed location, germination date, harvest date
+- [x] Uncheck removes planting record (or marks as undone)
+- **Done**: all 5 gates pass; 159 tests + 11 E2E; 94.52% coverage
 
 ### Phase 5: Planted List (Sprint 5)
 - [ ] Planted list view (`/planted`) — all plantings with details
