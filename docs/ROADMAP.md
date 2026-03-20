@@ -1,10 +1,10 @@
 # Sow What — Roadmap
 
 ## Current State
-- **Tests**: 173 unit/component + 14 E2E = 187 total
-- **Coverage**: 94.05% statements, 87.3% branches
-- **LOC**: ~5285
-- **Milestone**: Sprint 5 complete -- Weather Integration next
+- **Tests**: 225 unit/component + 19 E2E = 244 total
+- **Coverage**: 94.28% statements, 85.78% branches
+- **LOC**: ~6547
+- **Milestone**: Sprint 6 complete -- PIN Auth + Settings next
 
 ## Phases
 
@@ -52,13 +52,13 @@
 - [x] E2E: full planting journey (add seed → checklist → check off → appears in planted list)
 - **Done**: all 5 gates pass; 173 tests + 14 E2E; 94.05% coverage
 
-### Phase 6: Weather Integration (Sprint 6)
-- [ ] Open-Meteo client: fetch current conditions + 7-day forecast
-- [ ] Cache weather data in Dexie for offline access
-- [ ] Weather view (`/weather`) — current conditions + forecast + frost alerts
-- [ ] Auto-capture real weather on planting (replace Sprint 4 stub)
-- [ ] Frost warning: highlight days where forecast temp <= 32F
-- **Done when**: weather fetches and displays correctly; offline falls back to cache; frost alerts surface; planting records get real weather; tests pass
+### Phase 6: Weather Integration (Sprint 6) -- DONE
+- [x] Open-Meteo client: fetch current conditions + 7-day forecast
+- [x] Cache weather data in Dexie for offline access
+- [x] Weather view (`/weather`) — current conditions + forecast + frost alerts
+- [x] Auto-capture real weather on planting (replace Sprint 4 stub)
+- [x] Frost warning: highlight days where forecast temp <= 32F
+- **Done**: all 5 gates pass; 225 tests + 19 E2E; 94.28% coverage
 
 ### Phase 7: PIN Auth + Settings (Sprint 7)
 - [ ] PIN entry screen (`/pin`) — numeric pad
