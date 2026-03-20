@@ -40,7 +40,7 @@ describe("route shells", () => {
 
   it("renders Planted at /planted", () => {
     renderRoute("/planted");
-    expect(screen.getByText("Planted")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Planted" })).toBeInTheDocument();
   });
 
   it("renders PlantingDetail at /planted/:id", async () => {

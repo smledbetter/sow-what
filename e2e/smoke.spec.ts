@@ -13,7 +13,7 @@ test.describe("smoke tests", () => {
 
   test("navigates to /planted", async ({ page }) => {
     await page.goto("/planted");
-    await expect(page.getByText("Planted")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Planted" })).toBeVisible();
   });
 
   test("navigates to /weather", async ({ page }) => {
