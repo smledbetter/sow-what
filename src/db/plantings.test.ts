@@ -9,6 +9,7 @@ const makePlanting = (overrides: Record<string, unknown> = {}) => ({
   seedId: 1,
   method: "cold_sow" as const,
   datePlanted: "2026-03-15",
+  plantedAt: "2026-03-15T10:00:00.000Z",
   bedLocation: "Raised bed A",
   germinationDate: "",
   expectedHarvest: "",

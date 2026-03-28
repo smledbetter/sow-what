@@ -20,6 +20,7 @@ export interface Planting {
   seedId: number;
   method: "cold_sow" | "direct_sow";
   datePlanted: string; // ISO date YYYY-MM-DD
+  plantedAt: string; // ISO datetime — when the check-off happened
   bedLocation: string;
   germinationDate: string;
   expectedHarvest: string;

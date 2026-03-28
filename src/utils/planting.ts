@@ -33,6 +33,7 @@ export async function createPlantingRecord(
     seedId,
     method,
     datePlanted,
+    plantedAt: new Date().toISOString(),
     bedLocation: "",
     germinationDate: "",
     expectedHarvest: "",

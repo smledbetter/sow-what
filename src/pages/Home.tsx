@@ -14,23 +14,30 @@ import { getPlantingWarnings, shortDayLabel } from "../utils/weather-warnings.ts
 import type { PlantingWarning } from "../utils/weather-warnings.ts";
 import type { SowWhatDB } from "../db/database.ts";
 
+const PLANTED_HIDE_MS = 12 * 60 * 60 * 1000; // 12 hours
+
 export interface HomeProps {
   db?: SowWhatDB;
   /** Override today's date for testing (ISO string YYYY-MM-DD) */
   today?: string;
+  /** Override current timestamp for testing (ISO datetime string) */
+  now?: string;
 }
 
-export function Home({ db, today }: HomeProps = {}) {
+export function Home({ db, today, now }: HomeProps = {}) {
   const navigate = useNavigate();
   const [seeds, setSeeds] = useState<Seed[]>([]);
   const [activeTab, setActiveTab] = useState<SowMethod>("cold_sow");
-  /** Maps seedId → plantingId for seeds checked off today */
+  /** Maps seedId → plantingId for seeds checked off recently (< 12h) */
   const [plantedMap, setPlantedMap] = useState<Map<number, number>>(new Map());
+  /** Seed IDs that were planted > 12h ago — hidden from checklist */
+  const [hiddenSeedIds, setHiddenSeedIds] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
   const [warnings, setWarnings] = useState<PlantingWarning[]>([]);
 
   const dao = useMemo(() => (db ? createSeedDAO(db) : createSeedDAO()), [db]);
   const currentDate = today ?? todayISO();
+  const nowMs = now ? new Date(now).getTime() : Date.now();
 
   // Load seeds
   useEffect(() => {
@@ -41,22 +48,29 @@ export function Home({ db, today }: HomeProps = {}) {
     return () => { cancelled = true; };
   }, [dao]);
 
-  // Load existing plantings for today to restore checked state
+  // Load existing plantings — recent ones show crossed out, stale ones are hidden
   useEffect(() => {
     let cancelled = false;
     const plantingDAO = db ? createPlantingDAO(db) : createPlantingDAO();
     plantingDAO.getAll().then((all) => {
       if (cancelled) return;
-      const todayPlantings = new Map<number, number>();
+      const recent = new Map<number, number>();
+      const hidden = new Set<number>();
       for (const p of all) {
-        if (p.datePlanted === currentDate && p.id !== undefined) {
-          todayPlantings.set(p.seedId, p.id);
+        if (p.id === undefined) continue;
+        const plantedAtMs = p.plantedAt ? new Date(p.plantedAt).getTime() : 0;
+        const age = nowMs - plantedAtMs;
+        if (age >= PLANTED_HIDE_MS) {
+          hidden.add(p.seedId);
+        } else {
+          recent.set(p.seedId, p.id);
         }
       }
-      setPlantedMap(todayPlantings);
+      setPlantedMap(recent);
+      setHiddenSeedIds(hidden);
     });
     return () => { cancelled = true; };
-  }, [db, currentDate]);
+  }, [db, nowMs]);
 
   // Fetch weather warnings
   useEffect(() => {
@@ -69,8 +83,9 @@ export function Home({ db, today }: HomeProps = {}) {
   }, [db]);
 
   const checklistSeeds = useMemo(
-    () => getSeedsForDate(seeds, activeTab, currentDate),
-    [seeds, activeTab, currentDate]
+    () => getSeedsForDate(seeds, activeTab, currentDate)
+      .filter((s) => !hiddenSeedIds.has(s.id!)),
+    [seeds, activeTab, currentDate, hiddenSeedIds]
   );
 
   const toggleCheck = useCallback(async (seedId: number) => {

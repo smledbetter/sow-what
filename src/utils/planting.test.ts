@@ -62,6 +62,8 @@ describe("createPlantingRecord", () => {
     expect(planting!.datePlanted).toBe("2026-03-15");
     expect(planting!.bedLocation).toBe("");
     expect(planting!.weatherSnapshotId).toBe(result.weatherSnapshotId);
+    expect(planting!.plantedAt).toBeDefined();
+    expect(new Date(planting!.plantedAt).getTime()).not.toBeNaN();
 
     const weatherDAO = createWeatherDAO(db);
     const snapshot = await weatherDAO.getById(result.weatherSnapshotId);

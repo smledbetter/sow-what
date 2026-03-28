@@ -16,6 +16,19 @@ export class SowWhatDB extends Dexie {
       weatherSnapshots: "++id, date",
       settings: "key",
     });
+
+    this.version(2).stores({
+      seeds: "++id, plant, varietal",
+      plantings: "++id, seedId, method, datePlanted",
+      weatherSnapshots: "++id, date",
+      settings: "key",
+    }).upgrade((tx) => {
+      return tx.table("plantings").toCollection().modify((planting) => {
+        if (!planting.plantedAt) {
+          planting.plantedAt = planting.datePlanted + "T00:00:00.000Z";
+        }
+      });
+    });
   }
 }
 

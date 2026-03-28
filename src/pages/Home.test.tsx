@@ -29,9 +29,9 @@ const makeSeed = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-function renderHome(today: string) {
+function renderHome(today: string, now?: string) {
   const routes = [
-    { path: "/", element: <Home db={db} today={today} /> },
+    { path: "/", element: <Home db={db} today={today} now={now} /> },
     { path: "/seeds", element: <Seeds db={db} /> },
   ];
   const router = createMemoryRouter(routes, { initialEntries: ["/"] });
@@ -325,21 +325,80 @@ describe("Home page", () => {
     const seeds = await seedDAO.getAll();
     const seedId = seeds[0].id!;
 
-    // Pre-create a planting for today
+    // Pre-create a planting for today (planted 1 hour ago)
     const plantingDAO = createPlantingDAO(db);
     await plantingDAO.add({
       seedId,
       method: "cold_sow",
       datePlanted: "2026-03-05",
+      plantedAt: "2026-03-05T09:00:00.000Z",
       bedLocation: "",
       germinationDate: "",
       expectedHarvest: "",
       weatherSnapshotId: 1,
     });
 
-    renderHome("2026-03-05");
+    renderHome("2026-03-05", "2026-03-05T10:00:00.000Z");
     const plantName = await screen.findByText("Lettuce");
     // Should already be checked (strike-through)
+    await waitFor(() => {
+      expect(plantName).toHaveStyle({ textDecoration: "line-through" });
+    });
+  });
+
+  it("hides seeds planted more than 12 hours ago", async () => {
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    const seeds = await seedDAO.getAll();
+    const seedId = seeds[0].id!;
+
+    // Planted 13 hours ago
+    const plantingDAO = createPlantingDAO(db);
+    await plantingDAO.add({
+      seedId,
+      method: "cold_sow",
+      datePlanted: "2026-03-05",
+      plantedAt: "2026-03-04T21:00:00.000Z",
+      bedLocation: "",
+      germinationDate: "",
+      expectedHarvest: "",
+      weatherSnapshotId: 1,
+    });
+
+    renderHome("2026-03-05", "2026-03-05T10:00:00.000Z");
+    // Should not appear at all
+    await waitFor(() => {
+      expect(screen.queryByText("Lettuce")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows seed as crossed out when planted less than 12 hours ago", async () => {
+    const seedDAO = createSeedDAO(db);
+    await seedDAO.bulkAdd([
+      makeSeed({ plant: "Lettuce", coldSowStart: "2026-03-01", coldSowEnd: "2026-03-10" }),
+    ]);
+
+    const seeds = await seedDAO.getAll();
+    const seedId = seeds[0].id!;
+
+    // Planted 6 hours ago
+    const plantingDAO = createPlantingDAO(db);
+    await plantingDAO.add({
+      seedId,
+      method: "cold_sow",
+      datePlanted: "2026-03-05",
+      plantedAt: "2026-03-05T04:00:00.000Z",
+      bedLocation: "",
+      germinationDate: "",
+      expectedHarvest: "",
+      weatherSnapshotId: 1,
+    });
+
+    renderHome("2026-03-05", "2026-03-05T10:00:00.000Z");
+    const plantName = await screen.findByText("Lettuce");
     await waitFor(() => {
       expect(plantName).toHaveStyle({ textDecoration: "line-through" });
     });
