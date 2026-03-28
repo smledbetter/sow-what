@@ -7,6 +7,8 @@ import { SowWhatDB } from "../db/database.ts";
 import { Settings } from "./Settings.tsx";
 import { ensureDefaultPin, getSetting, setSetting, SETTING_KEYS, setAuthenticated } from "../utils/pin.ts";
 import { createSeedDAO } from "../db/seeds.ts";
+import { createPlantingDAO } from "../db/plantings.ts";
+import { createWeatherDAO } from "../db/weather.ts";
 import type { Seed } from "../types/index.ts";
 
 let dbCounter = 0;
@@ -15,13 +17,14 @@ let dbName: string;
 
 function renderSettings() {
   const downloadMock = vi.fn();
+  const backupMock = vi.fn();
   const routes = [
-    { path: "/settings", element: <Settings db={db} onDownloadCsv={downloadMock} /> },
+    { path: "/settings", element: <Settings db={db} onDownloadCsv={downloadMock} onDownloadBackup={backupMock} /> },
     { path: "/", element: <div>Home Page</div> },
   ];
   const router = createMemoryRouter(routes, { initialEntries: ["/settings"] });
   render(<RouterProvider router={router} />);
-  return { downloadMock };
+  return { downloadMock, backupMock };
 }
 
 const testSeed: Omit<Seed, "id"> = {
@@ -226,6 +229,87 @@ describe("Settings page", () => {
     await screen.findByRole("heading", { name: "Settings" });
     // All sections should have aria-labelledby matching their heading
     const sections = document.querySelectorAll("section[aria-labelledby]");
-    expect(sections.length).toBe(4);
+    expect(sections.length).toBe(5);
+  });
+
+  it("exports backup as JSON", async () => {
+    const dao = createSeedDAO(db);
+    await dao.add(testSeed);
+    const { backupMock } = renderSettings();
+    await screen.findByRole("heading", { name: "Settings" });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "Download Backup" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Backed up 1 seeds/)).toBeInTheDocument();
+    });
+    expect(backupMock).toHaveBeenCalledTimes(1);
+    const [json, filename] = backupMock.mock.calls[0];
+    const data = JSON.parse(json);
+    expect(data.version).toBe(1);
+    expect(data.seeds).toHaveLength(1);
+    expect(filename).toMatch(/sow-what-backup-.*\.json/);
+  });
+
+  it("shows message when no data to back up", async () => {
+    renderSettings();
+    await screen.findByRole("heading", { name: "Settings" });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: "Download Backup" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("No data to back up")).toBeInTheDocument();
+    });
+  });
+
+  it("restores from backup file", async () => {
+    renderSettings();
+    await screen.findByRole("heading", { name: "Settings" });
+    const user = userEvent.setup();
+
+    const backupData = {
+      version: 1,
+      exportedAt: "2026-03-28T00:00:00.000Z",
+      seeds: [{ ...testSeed, id: 1 }],
+      plantings: [{
+        id: 1, seedId: 1, method: "direct_sow", datePlanted: "2026-05-10",
+        plantedAt: "2026-05-10T14:00:00.000Z", bedLocation: "A",
+        germinationDate: "", expectedHarvest: "", weatherSnapshotId: 1,
+      }],
+      weatherSnapshots: [{
+        id: 1, date: "2026-05-10", tempHigh: 72, tempLow: 48,
+        precipitation: 0, conditions: "Sunny", rawJson: "{}",
+      }],
+      settings: [{ key: "test", value: "val" }],
+    };
+    const file = new File([JSON.stringify(backupData)], "backup.json", { type: "application/json" });
+
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Restored 1 seeds, 1 plantings, 1 weather snapshots/)).toBeInTheDocument();
+    });
+
+    // Verify data was actually imported
+    const seeds = await createSeedDAO(db).getAll();
+    expect(seeds).toHaveLength(1);
+    expect(seeds[0].plant).toBe("Tomato");
+  });
+
+  it("shows error for invalid backup file", async () => {
+    renderSettings();
+    await screen.findByRole("heading", { name: "Settings" });
+    const user = userEvent.setup();
+
+    const file = new File(["not json"], "bad.json", { type: "application/json" });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toBeInTheDocument();
+    });
   });
 });

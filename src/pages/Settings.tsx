@@ -9,6 +9,8 @@ import {
 } from "../utils/pin.ts";
 import { createSeedDAO } from "../db/seeds.ts";
 import { serializeCsv, downloadCsv } from "../utils/csv.ts";
+import { exportBackup, importBackup, parseBackupFile, downloadBackup } from "../utils/backup.ts";
+import { db as defaultDb } from "../db/database.ts";
 import { BottomNav } from "../components/BottomNav.tsx";
 import type { SowWhatDB } from "../db/database.ts";
 
@@ -16,9 +18,12 @@ export interface SettingsProps {
   db?: SowWhatDB;
   /** Override download function for testing */
   onDownloadCsv?: (csv: string, filename: string) => void;
+  /** Override backup download for testing */
+  onDownloadBackup?: (json: string, filename: string) => void;
 }
 
-export function Settings({ db, onDownloadCsv }: SettingsProps = {}) {
+export function Settings({ db, onDownloadCsv, onDownloadBackup }: SettingsProps = {}) {
+  const activeDb = db ?? defaultDb;
   // PIN change state
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
@@ -37,6 +42,10 @@ export function Settings({ db, onDownloadCsv }: SettingsProps = {}) {
 
   // Export state
   const [exportMessage, setExportMessage] = useState("");
+
+  // Backup state
+  const [backupMessage, setBackupMessage] = useState("");
+  const [backupError, setBackupError] = useState(false);
 
   const seedDAO = useMemo(() => (db ? createSeedDAO(db) : createSeedDAO()), [db]);
 
@@ -116,6 +125,39 @@ export function Settings({ db, onDownloadCsv }: SettingsProps = {}) {
       downloadCsv(csv, filename);
     }
     setExportMessage(`Exported ${seeds.length} seeds`);
+  };
+
+  const handleBackupExport = async () => {
+    setBackupMessage("");
+    setBackupError(false);
+    const data = await exportBackup(activeDb);
+    const total = data.seeds.length + data.plantings.length + data.weatherSnapshots.length;
+    if (total === 0) {
+      setBackupMessage("No data to back up");
+      return;
+    }
+    const json = JSON.stringify(data, null, 2);
+    const filename = `sow-what-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    if (onDownloadBackup) {
+      onDownloadBackup(json, filename);
+    } else {
+      downloadBackup(data, filename);
+    }
+    setBackupMessage(`Backed up ${data.seeds.length} seeds, ${data.plantings.length} plantings, ${data.weatherSnapshots.length} weather snapshots`);
+  };
+
+  const handleBackupImport = async (file: File) => {
+    setBackupMessage("");
+    setBackupError(false);
+    try {
+      const text = await file.text();
+      const data = parseBackupFile(text);
+      const counts = await importBackup(activeDb, data);
+      setBackupMessage(`Restored ${counts.seeds} seeds, ${counts.plantings} plantings, ${counts.weatherSnapshots} weather snapshots`);
+    } catch (err) {
+      setBackupError(true);
+      setBackupMessage(err instanceof Error ? err.message : "Failed to restore backup");
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -325,6 +367,56 @@ export function Settings({ db, onDownloadCsv }: SettingsProps = {}) {
             {exportMessage}
           </div>
         )}
+      </section>
+
+      {/* Backup & Restore */}
+      <section style={sectionStyle} aria-labelledby="backup-heading">
+        <h2 id="backup-heading" style={{ margin: "0 0 16px 0", fontSize: "18px" }}>
+          Backup & Restore
+        </h2>
+        <p style={{ margin: "0 0 12px 0", fontSize: "14px", color: "var(--color-text-secondary)" }}>
+          Export all data as JSON or restore from a previous backup. Restoring replaces all current data.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <button
+            onClick={() => { void handleBackupExport(); }}
+            style={buttonStyle}
+          >
+            Download Backup
+          </button>
+          <label
+            style={{
+              ...buttonStyle,
+              backgroundColor: "var(--color-text-secondary)",
+              textAlign: "center",
+              cursor: "pointer",
+            }}
+          >
+            Restore from Backup
+            <input
+              type="file"
+              accept=".json"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleBackupImport(file);
+                e.target.value = "";
+              }}
+            />
+          </label>
+          {backupMessage && (
+            <div
+              role={backupError ? "alert" : "status"}
+              style={{
+                color: backupError ? "var(--color-danger)" : "var(--color-primary-dark)",
+                fontSize: "14px",
+                fontWeight: "bold",
+              }}
+            >
+              {backupMessage}
+            </div>
+          )}
+        </div>
       </section>
 
       <BottomNav />
