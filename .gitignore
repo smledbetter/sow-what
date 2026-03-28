@@ -6,3 +6,6 @@ dev-dist
 coverage
 test-results
 playwright-report
+.netlify
+*.crt
+*.key
